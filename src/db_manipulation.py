@@ -1,12 +1,15 @@
 from api_tools import make_call_with_retry
 from datetime import datetime, timedelta
+import pytz
+import re
 
 # Source and target database IDs
-mt_source = "10d62907-d7c2-8036-8428-e8afc8ab261f" # Master Tasker
-mt_dest = "14662907-d7c2-809f-beaf-e23c4eb5302b" # Master Tasker History
-
-#mt_source = "14762907-d7c2-8062-922d-d8dde76da52b" # Test Source
-#mt_dest = "14762907-d7c2-80b6-99e8-e860239cf3cd" # Test Dest
+databases = {
+    "master": "10d62907-d7c2-8036-8428-e8afc8ab261f", #Master Tasker
+    "history": "14662907-d7c2-809f-beaf-e23c4eb5302b", #Tasker History
+    "test_source": "14762907-d7c2-8062-922d-d8dde76da52b", # Test Source
+    "test_dest": "14762907-d7c2-80b6-99e8-e860239cf3cd" # Test Dest
+}
 
 def get_databases(url:str):
     # Filter to search only for databases
@@ -26,16 +29,16 @@ def get_databases(url:str):
 def get_db_structure(url: str, source: bool):
     url += "databases/"
     if source:
-        url += mt_source
+        url += databases["master"]
     else:
-        url += mt_dest
+        url += databases["history"]
     struct = make_call_with_retry("get", url)['properties']
     for prop in struct:
         del struct[prop]['id']
     return struct
 
 def match_mt_structure(url: str, source_struct: dict, dest_struct: dict):
-    url += f"databases/{mt_dest}"
+    url += f"databases/{databases['history']}"
     props_to_destroy = {}
     
     # Create a dictionary where each property in dest_struct is a key, with None as its value
@@ -62,15 +65,9 @@ def match_mt_structure(url: str, source_struct: dict, dest_struct: dict):
         make_call_with_retry("patch", url, data)
 
 def get_mt_tasks(url: str):
-    url += f"databases/{mt_source}/query"
+    url += f"databases/{databases['master']}/query"
     data = {
-        "filter": {
-            "or": [
-                {"property": "Every", "select": 
-                    { "is_not_empty": True }
-                },
-            ]
-        }
+        "filter": { "property": "Done", "checkbox": {"equals": True} }
     }
     return make_call_with_retry("post", url, data)['results']
 
@@ -108,17 +105,19 @@ def unpack_db_page(url: str, task: dict):
                     unpacked_data[prop] = { "rich_text": [{ "text": { "content": content }}]}
     return unpacked_data
 
-def create_task(url: str, task: dict, parent: str, task_name: str = None):
+def create_task(url: str, task: dict, parent: str):
     url += "pages"
     new_props = unpack_db_page(url, task)
+    parent_name = list(databases.keys())[list(databases.values()).index(parent)]
     data = {"parent": { "database_id": parent }, "properties": new_props}
-    print(f"Creating task: {task_name}")
+    print(f"Creating task: {new_props['Name']['title'][0]['text']['content']} in {parent_name}" )
     make_call_with_retry("post", url, data)
 
-def new_due_date (task:dict):
-    now_datetime = datetime.now().replace(microsecond=0)
+def new_due_date (task:dict, now_datetime, offset):
     freq = task['properties']['Repeats']['number']
     scale = task['properties']['Every']['select']['name']
+    datetime_str = task['properties']['Due Date']['date']['start']
+    new_time = re.search('\d{2}:\d{2}:\d{2}.\d{3}', datetime_str)
 
     match scale:
         case "Days":
@@ -131,27 +130,31 @@ def new_due_date (task:dict):
             year_delta = (now_datetime.month - 1 + freq) // 12
             new_year = now_datetime.year + year_delta
             new_start_datetime = now_datetime.replace(year=new_year, month=new_month)
-    new_due_value = new_start_datetime.strftime("%Y-%m-%dT%H:%M:%S.000%z")
+    if new_time is not None:
+        new_due_value = new_start_datetime.strftime(f"%Y-%m-%dT{new_time}+{offset}")[:-3]
+    else:
+        new_due_value = new_start_datetime.strftime(f"%Y-%m-%d")
     task['properties']['Due Date']['date']['start'] = new_due_value
     task['properties']['Done']['checkbox'] = False
     return task
 
-def delete_or_reset_mt_task(url: str, task:dict):
-    if task['properties']['Status']['select']['name'] == 'Reset':
-        if task['properties']['Every']['select'] is not None:
-            task = new_due_date(task)
-        create_task(url, task, mt_source)
-    
+def delete_or_reset_mt_task(url: str, task:dict, now_datetime, offset):
+    if task['properties']['Every']['select'] is not None:
+        task = new_due_date(task, now_datetime, offset)
+        create_task(url, task, databases["master"])
+    print(f"Deleting old task: {task['properties']['Name']['title'][0]['text']['content']}")
     url += f"pages/{task['id']}"
     data = {
         "in_trash": True
     }
     make_call_with_retry("patch", url, data)
 
-def move_mt_tasks(url):
+def move_mt_tasks(url):    
+    time_zone = pytz.timezone('Australia/Melbourne')
+    now_datetime = datetime.now(time_zone)
+    offset = now_datetime.utcoffset()
+    
     tasks_to_move = get_mt_tasks(url)
     for task in tasks_to_move:
-        task_name = task['properties']['Name']['title'][0]['text']['content']
-        print(f"Moving task {task_name} to history")
-        create_task(url, task, mt_dest, task_name)
-        delete_or_reset_mt_task(url, task)
+        create_task(url, task, databases["history"])
+        delete_or_reset_mt_task(url, task, now_datetime, offset)
