@@ -101,8 +101,9 @@ def unpack_db_page(url: str, task: dict):
             case 'relation':
                 if prop_dict[prop_type] != []:
                     page_id = prop_dict[prop_type][0]['id']
-                    content = make_call_with_retry("get",f'{url}/pages/{page_id}')
-                    unpacked_data[prop] = { "rich_text": [{ "text": { "content": content }}]}
+                    response = make_call_with_retry("get",f'{url}/{page_id}')
+                    page_name = response['properties']['Name']['title'][0]['text']['content']
+                    unpacked_data[prop] = { "rich_text": [{ "text": { "content": page_name }}]}
     return unpacked_data
 
 def create_task(url: str, task: dict, parent: str):

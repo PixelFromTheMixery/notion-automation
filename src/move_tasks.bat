@@ -13,8 +13,8 @@ REM Activate the virtual environment
 call "C:\Users\Aya\Documents\Github\notion-automation\venv\Scripts\activate.bat"
 
 REM Add a timestamp before pip install
-REM echo [%date% %time%] Installing dependencies >>  %log_path%
-REM install requests >>  %log_path% 2>&1
+echo [%date% %time%] Installing dependencies >>  %log_path%
+python -m pip install -r "C:\Users\Aya\Documents\Github\notion-automation\reqs.txt" >>  %log_path% 2>&1
 
 REM Add a timestamp before running the Python script
 echo [%date% %time%] Running Python script >>  %log_path%
