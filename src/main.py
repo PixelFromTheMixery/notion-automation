@@ -1,6 +1,6 @@
 import sys
 import argparse
-from db_manipulation import get_databases, move_mt_tasks, get_db_structure, match_mt_structure
+from move_tasks import get_databases, move_mt_tasks, get_db_structure, match_mt_structure
 
 url = "https://api.notion.com/v1/"
 

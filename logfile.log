@@ -1,0 +1,32 @@
+Currently in C:\Users\Aya\Documents\Github\notion-automation 
+[Sun 01/12/2024 21:38:17.96] Starting script 
+[Sun 01/12/2024 21:38:18.01] Installing dependencies 
+Requirement already satisfied: certifi==2024.8.30 in c:\users\aya\appdata\local\packages\pythonsoftwarefoundation.python.3.11_qbz5n2kfra8p0\localcache\local-packages\python311\site-packages (from -r reqs.txt (line 1)) (2024.8.30)
+Requirement already satisfied: charset-normalizer==3.4.0 in c:\users\aya\appdata\local\packages\pythonsoftwarefoundation.python.3.11_qbz5n2kfra8p0\localcache\local-packages\python311\site-packages (from -r reqs.txt (line 2)) (3.4.0)
+Requirement already satisfied: idna==3.10 in c:\users\aya\appdata\local\packages\pythonsoftwarefoundation.python.3.11_qbz5n2kfra8p0\localcache\local-packages\python311\site-packages (from -r reqs.txt (line 3)) (3.10)
+Requirement already satisfied: python-dotenv==1.0.1 in c:\users\aya\appdata\local\packages\pythonsoftwarefoundation.python.3.11_qbz5n2kfra8p0\localcache\local-packages\python311\site-packages (from -r reqs.txt (line 4)) (1.0.1)
+Requirement already satisfied: pytz==2024.2 in c:\users\aya\appdata\local\packages\pythonsoftwarefoundation.python.3.11_qbz5n2kfra8p0\localcache\local-packages\python311\site-packages (from -r reqs.txt (line 5)) (2024.2)
+Requirement already satisfied: requests==2.32.3 in c:\users\aya\appdata\local\packages\pythonsoftwarefoundation.python.3.11_qbz5n2kfra8p0\localcache\local-packages\python311\site-packages (from -r reqs.txt (line 6)) (2.32.3)
+Requirement already satisfied: urllib3==2.2.3 in c:\users\aya\appdata\local\packages\pythonsoftwarefoundation.python.3.11_qbz5n2kfra8p0\localcache\local-packages\python311\site-packages (from -r reqs.txt (line 7)) (2.2.3)
+[Sun 01/12/2024 21:38:19.54] Running Python script 
+python: can't open file 'C:\\src\\main.py': [Errno 2] No such file or directory
+[Sun 01/12/2024 21:38:19.69] Script finished 
+[Sun 01/12/2024 21:38:19.69] Closing 
+Currently in C:\Users\Aya\Documents\Github\notion-automation 
+[Sun 01/12/2024 21:39:40.47] Starting script 
+[Sun 01/12/2024 21:39:40.52] Installing dependencies 
+Requirement already satisfied: certifi==2024.8.30 in c:\users\aya\appdata\local\packages\pythonsoftwarefoundation.python.3.11_qbz5n2kfra8p0\localcache\local-packages\python311\site-packages (from -r reqs.txt (line 1)) (2024.8.30)
+Requirement already satisfied: charset-normalizer==3.4.0 in c:\users\aya\appdata\local\packages\pythonsoftwarefoundation.python.3.11_qbz5n2kfra8p0\localcache\local-packages\python311\site-packages (from -r reqs.txt (line 2)) (3.4.0)
+Requirement already satisfied: idna==3.10 in c:\users\aya\appdata\local\packages\pythonsoftwarefoundation.python.3.11_qbz5n2kfra8p0\localcache\local-packages\python311\site-packages (from -r reqs.txt (line 3)) (3.10)
+Requirement already satisfied: python-dotenv==1.0.1 in c:\users\aya\appdata\local\packages\pythonsoftwarefoundation.python.3.11_qbz5n2kfra8p0\localcache\local-packages\python311\site-packages (from -r reqs.txt (line 4)) (1.0.1)
+Requirement already satisfied: pytz==2024.2 in c:\users\aya\appdata\local\packages\pythonsoftwarefoundation.python.3.11_qbz5n2kfra8p0\localcache\local-packages\python311\site-packages (from -r reqs.txt (line 5)) (2024.2)
+Requirement already satisfied: requests==2.32.3 in c:\users\aya\appdata\local\packages\pythonsoftwarefoundation.python.3.11_qbz5n2kfra8p0\localcache\local-packages\python311\site-packages (from -r reqs.txt (line 6)) (2.32.3)
+Requirement already satisfied: urllib3==2.2.3 in c:\users\aya\appdata\local\packages\pythonsoftwarefoundation.python.3.11_qbz5n2kfra8p0\localcache\local-packages\python311\site-packages (from -r reqs.txt (line 7)) (2.2.3)
+[Sun 01/12/2024 21:39:42.13] Running Python script at: "C:\Users\Aya\Documents\Github\notion-automation\src\main.py"  
+Attempt 1 of 3
+Creating task: Relative pathing in history
+Attempt 1 of 3
+Deleting old task: Relative pathing
+Attempt 1 of 3
+[Sun 01/12/2024 21:39:51.91] Script finished 
+[Sun 01/12/2024 21:39:51.92] Closing 

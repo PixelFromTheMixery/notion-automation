@@ -135,19 +135,26 @@ def new_due_date (task:dict, now_datetime, offset):
         new_due_value = new_start_datetime.strftime(f"%Y-%m-%dT{new_time}+{offset}")[:-3]
     else:
         new_due_value = new_start_datetime.strftime(f"%Y-%m-%d")
-    task['properties']['Due Date']['date']['start'] = new_due_value
-    task['properties']['Done']['checkbox'] = False
-    return task
+    return new_due_value
 
 def delete_or_reset_mt_task(url: str, task:dict, now_datetime, offset):
     if task['properties']['Every']['select'] is not None:
-        task = new_due_date(task, now_datetime, offset)
-        create_task(url, task, databases["master"])
-    print(f"Deleting old task: {task['properties']['Name']['title'][0]['text']['content']}")
-    url += f"pages/{task['id']}"
-    data = {
-        "in_trash": True
-    }
+        new_date = new_due_date(task, now_datetime, offset)
+        url += f"pages/{task['id']}"
+        data = { 
+            "properties": {
+                "Done": {
+                    "checkbox": False
+                },
+                "Due Date": {
+                    "date": { "start": new_date }
+                }
+            }
+        }
+    else:
+        print(f"Deleting old task: {task['properties']['Name']['title'][0]['text']['content']}")
+        url += f"pages/{task['id']}"
+        data = { "in_trash": True }
     make_call_with_retry("patch", url, data)
 
 def move_mt_tasks(url):    
