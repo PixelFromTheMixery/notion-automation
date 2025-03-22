@@ -76,6 +76,9 @@ def unpack_db_page(url: str, task: dict):
     for prop in task['properties']:
         prop_dict = task['properties'][prop]
         prop_type = prop_dict['type']
+
+        if prop == 'Sub-item':
+            print()
         match prop_type:
             case 'title':
                 title = prop_dict[prop_type][0]['text']['content']
@@ -99,7 +102,7 @@ def unpack_db_page(url: str, task: dict):
                     content = prop_dict[prop_type][0]['text']['content']
                     unpacked_data[prop] = { "rich_text": [{ "text": { "content": content }}]}
             case 'relation':
-                if prop_dict[prop_type] != []:
+                if prop_dict[prop_type] != [] and prop != 'Sub-item':
                     page_id = prop_dict[prop_type][0]['id']
                     response = make_call_with_retry("get",f'{url}/{page_id}')
                     page_name = response['properties']['Name']['title'][0]['text']['content']
@@ -154,7 +157,7 @@ def delete_or_reset_mt_task(url: str, task:dict, now_datetime, offset):
     else:
         print(f"Deleting old task: {task['properties']['Name']['title'][0]['text']['content']}")
         url += f"pages/{task['id']}"
-        data = { "in_trash": True }
+        data = { "archived": True }
     make_call_with_retry("patch", url, data)
 
 def move_mt_tasks(url):    

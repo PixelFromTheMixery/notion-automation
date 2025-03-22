@@ -4,7 +4,22 @@ set api_key=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
 
 REM Setting directory to script
 cd /d %~dp0
-set log_path="./logfile.log"
+
+REM Get current date in YYYY-MM-DD format
+for /f "tokens=2-4 delims=/.- " %%a in ('date /t') do (
+    set year=%%c
+    set month=%%b
+    set day=%%a
+)
+
+REM Create folder test
+mkdir test
+
+REM Check Month Directory
+if not exist logs\%year%\%month%\ mkdir logs\%year%\%month%
+
+REM Set log path
+set log_path=.\logs\%year%\%month%\%day%.log
 echo Currently in %cd% >> %log_path%
 
 REM Echo the environment variable
