@@ -2,11 +2,27 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Run Current File",
+			"name": "Run Main File",
+			"type": "python",
+			"request": "launch",
+			"program": "${workspaceFolder}/src/main.py",
+			"console": "integratedTerminal"
+		}
+		{
+			"name": "Run Main File with database match",
 			"type": "python",
 			"request": "launch",
 			"program": "${workspaceFolder}/src/main.py",
 			"console": "integratedTerminal",
+			"args": ["-dbm"]
+		}
+		{
+			"name": "Run Main File with move task",
+			"type": "python",
+			"request": "launch",
+			"program": "${workspaceFolder}/src/main.py",
+			"console": "integratedTerminal",
+			"args": ["-m"]
 		}
 	]
 }

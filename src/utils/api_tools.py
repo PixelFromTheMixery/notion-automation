@@ -4,20 +4,27 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-api_key = os.getenv("api_key")
 
-headers = {
-    "Authorization": f"Bearer {api_key}",
-    "Content-Type": "application/json",
-    "Notion-Version": "2022-06-28",
-}
 
 def make_call_with_retry(category: str, url, data = None, retries=3, delay=2):
+
+    if "notion" in url:
+        headers = {
+            "Authorization": f"Bearer {os.getenv('notion_api_key')}",
+            "Content-Type": "application/json",
+            "Notion-Version": "2022-06-28",
+        }
+    if "clockify" in url:
+        headers = {
+            "X-Api-Key": os.getenv('clockify_api_key'),
+            "Content-Type": "application/json",
+        }
+
     #if data != None:
     #    print(data)
     for attempt in range(1, retries + 1):
         try:
-            print(f"Attempt {attempt} of {retries}")
+            print(f"Attempt to {category} at {url}. {attempt} of {retries}")
             # Main call logic
             match category:
                 case "post":
@@ -26,10 +33,6 @@ def make_call_with_retry(category: str, url, data = None, retries=3, delay=2):
                     response = requests.get(url, headers=headers)
                 case "patch":
                     response = requests.patch(url, headers=headers, json=data)
-                case "delete_mt_tasks":
-                    pass
-                case "create_history_tasks":
-                    pass
                 case _:
                     raise ValueError(f"Unknown category: {category}")
 
