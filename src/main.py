@@ -50,7 +50,7 @@ if __name__ == "__main__":
             task_mover.move_mt_tasks()
         
         if args.clockify:
-            clockify
+            clockify.get_user()
         
         if not any(vars(args).values()):
             print("No flags provided. Please provide a flag to run a specific function.")
