@@ -4,9 +4,10 @@ secrets/*
 
 # Logs
 logs/
-src/data
+src/data/*
 
 #venv
 venv/
 
+__pycache__/
 *.pyc

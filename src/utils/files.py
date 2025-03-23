@@ -1,9 +1,9 @@
-import json
+import yaml
 
-def write_json(data, filename):
+def write_yaml(data, filename):
     with open(filename, "w") as f:
-        f.write(json.dumps(data))
+        f.write(yaml.dump(data))
 
-def read_json(filename):
+def read_yaml(filename):
     with open(filename, "r") as f:
-        return json.load(f)
+        return yaml.safe_load(f)

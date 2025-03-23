@@ -1,5 +1,6 @@
 from utils.api_tools import make_call_with_retry
-from utils.files import read_json
+from utils.config import Config
+from utils.files import read_yaml
 from utils.time import get_current_time
 from notion.notion_utils import NotionUtils
 from datetime import timedelta
@@ -7,9 +8,9 @@ import json, re
 
 class MoveTasks:
     def __init__(self):
-        self.url = "https://api.notion.com/v1/"
+        self.url = Config().notion_url
         try:
-            self.databases = read_json("src/data/databases.json")
+            self.databases = read_yaml("src/data/notion.yaml")
                 
         except FileNotFoundError:
             self.databases = NotionUtils().get_databases()
