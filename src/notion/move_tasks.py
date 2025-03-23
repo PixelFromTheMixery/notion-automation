@@ -1,6 +1,5 @@
 from utils.api_tools import make_call_with_retry
 from utils.config import Config
-from utils.files import read_yaml
 from utils.time import get_current_time
 from notion.notion_utils import NotionUtils
 from datetime import timedelta
@@ -9,29 +8,23 @@ import json, re
 class MoveTasks:
     def __init__(self):
         self.url = Config().notion_url
-        try:
-            self.databases = read_yaml("src/data/notion.yaml")
-                
-        except FileNotFoundError:
-            self.databases = NotionUtils().get_databases()
 
-    def get_mt_tasks(self):
-        self.url += f"databases/{self.databases['source']}/query"
+    def get_mt_tasks(self, settings: dict):
+        get_tasks_url = self.url + f"databases/{settings['notion']['source']}/query"
         data = {
             "filter": { "property": "Status", "status": {"equals": "Done"} }
         }
-        return make_call_with_retry("post", self.url, data)['results']
+        return make_call_with_retry("post", get_tasks_url, data)['results']
 
 
     def create_task(self, task: dict, parent: str):
-        self.url += "pages"
-        new_props = self.unpack_db_page(self.url, task)
-        parent_name = list(self.databases.keys())[list(self.databases.values()).index(parent)]
+        pages_url = self.url + "pages"
+        new_props = NotionUtils().unpack_db_page(task)
         data = {"parent": { "database_id": parent }, "properties": new_props}
-        print(f"Creating task: {new_props['Name']['title'][0]['text']['content']} in {parent_name}" )
-        make_call_with_retry("post", self.url, data)
+        print(f"Creating task: {new_props['Name']['title'][0]['text']['content']} in destination database")
+        make_call_with_retry("post", pages_url, data)
 
-    def new_due_date (task:dict, now_datetime, offset):
+    def new_due_date (self, task:dict, now_datetime, offset):
         freq = task['properties']['Repeats']['number']
         scale = task['properties']['Every']['select']['name']
         datetime_str = task['properties']['Due Date']['date']['start']
@@ -54,29 +47,33 @@ class MoveTasks:
             new_due_value = new_start_datetime.strftime(f"%Y-%m-%d")
         return new_due_value
 
-    def delete_or_reset_mt_task(self, task:dict, now_datetime, offset):
+    def delete_or_reset_mt_task(self, task:dict, now_datetime, offset, n_settings):
+        update_url = self.url + f"pages/{task['id']}"
         if task['properties']['Every']['select'] is not None:
             new_date = self.new_due_date(task, now_datetime, offset)
-            self.url += f"pages/{task['id']}"
             data = { 
                 "properties": {
-                    "Done": {
-                        "checkbox": False
-                    },
                     "Due Date": {
                         "date": { "start": new_date }
                     }
                 }
             }
+
+            if n_settings['checkbox']:
+                data['properties'][n_settings['prop_name']] = { "checkbox": "false" },
+
+            else:
+                data['properties'][n_settings['prop_name']] = { 
+                    "status": { "name": n_settings['reset_text'] }}
         else:
             print(f"Deleting old task: {task['properties']['Name']['title'][0]['text']['content']}")
-            self.url += f"pages/{task['id']}"
             data = { "archived": True }
-        make_call_with_retry("patch", self.url, data)
+        make_call_with_retry("patch", update_url, data)
 
-    def move_mt_tasks(self):    
+    def move_mt_tasks(self, settings:dict):    
         now_datetime, offset = get_current_time()
-        tasks_to_move = self.get_mt_tasks()
+        tasks_to_move = self.get_mt_tasks(settings)
         for task in tasks_to_move:
-            self.create_task(task, self.databases["destination"])
-            self.delete_or_reset_mt_task(task, now_datetime, offset)
+            self.create_task(task, settings['notion']["destination"])
+            self.delete_or_reset_mt_task(task, now_datetime, offset, 
+                                         settings['notion'])

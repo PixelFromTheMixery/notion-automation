@@ -4,6 +4,7 @@ from clockify.clockify_sync import ClockifySync
 from clockify.clockify_utils import ClockifyUtils
 from notion.move_tasks import MoveTasks
 from notion.notion_utils import NotionUtils
+from utils.config import Config
 from utils.files import read_yaml
         
 if __name__ == "__main__":
@@ -34,37 +35,46 @@ if __name__ == "__main__":
         help="Clockify Integration"
         )
 
-
     args = parser.parse_args()
+
     notion_utils = NotionUtils()
     task_mover = MoveTasks()
     clockify_utils = ClockifyUtils()
     clockify_sync = ClockifySync()
 
-
     try:
         if args.setup:
+            try:
+                settings = read_yaml("src/data/settings.yaml")
+            except FileNotFoundError:
+                settings = {}
             setup_values = args.setup.split(",")
-            if "notion" in setup_values:
-                notion_utils.setup_notion()
+            if "mover" in setup_values:
+                settings = notion_utils.get_databases()
+            if "clockify" in setup_values:
+                settings = clockify_utils.get_projects()
+            Config().setup(settings, setup_values)
+        else:
+            settings = read_yaml("src/data/settings.yaml")
         
         if args.dbmatch:
-            source, dest = notion_utils.get_db_structure()
-            notion_utils.match_mt_structure(source, dest)
+            source, dest = notion_utils.get_db_structure(settings)
+            notion_utils.match_mt_structure(settings['notion']['destination'], 
+                                            source, dest)
 
         if args.move:
-            try:
-                task_mover.move_mt_tasks()
-            except:
-                notion_utils.get_databases()
-                task_mover.move_mt_tasks()
+            task_mover.move_mt_tasks(settings)
         
         if args.clockify:
-            clockify_utils.get_projects()
+            clockify_utils.get_projects(settings)
         
         if not any(vars(args).values()):
             print("No flags provided. Please provide a flag to run a specific function.")
             parser.print_help()
+
+    except FileNotFoundError as e:
+        print(f"Settings file not found. Please rerun with '-s' or '--setup' flag: {str(e)}", file=sys.stderr)
+        sys.exit(1)
 
     except Exception as e:
         print(f"An error occurred: {str(e)}", file=sys.stderr)

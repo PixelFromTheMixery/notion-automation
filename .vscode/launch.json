@@ -9,7 +9,7 @@
 			"console": "integratedTerminal"
 		},
 		{
-			"name": "Run Main File with database match",
+			"name": "Database match",
 			"type": "python",
 			"request": "launch",
 			"program": "${workspaceFolder}/src/main.py",
@@ -17,7 +17,7 @@
 			"args": ["-dbm"]
 		},
 		{
-			"name": "Run Main File with move task",
+			"name": "Move tasks",
 			"type": "python",
 			"request": "launch",
 			"program": "${workspaceFolder}/src/main.py",
@@ -25,12 +25,20 @@
 			"args": ["-m"]
 		},
 		{
-			"name": "Run Main File with clockify",
+			"name": "Clockify",
 			"type": "python",
 			"request": "launch",
 			"program": "${workspaceFolder}/src/main.py",
 			"console": "integratedTerminal",
 			"args": ["-c"]
+		},
+		{
+			"name": "Setup",
+			"type": "python",
+			"request": "launch",
+			"program": "${workspaceFolder}/src/main.py",
+			"console": "integratedTerminal",
+			"args": ["-s", "mover,clockify"]
 		}
 	]
 }

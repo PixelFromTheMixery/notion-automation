@@ -5,9 +5,8 @@ from utils.files import read_yaml, write_yaml
 class NotionUtils:
     def __init__(self):
         self.url = Config().notion_url
-        self.databases = {}
     
-    def get_databases(self):
+    def get_databases(self, settings: dict = None):
         # Filter to search only for databases
         data = {
             "filter": {
@@ -15,55 +14,40 @@ class NotionUtils:
                 "property": "object"
             }
         }
-        self.url += "search"
-        databases = make_call_with_retry("post", self.url, data)["results"]
+        search_url = self.url + "search"
+        databases = make_call_with_retry("post", search_url, data)["results"]
+        # Dictionary of database id's and names
         database_data = {"database list":[]}
         for db in databases:
             database = {}
             database["id"] = db['id']
             database["name"]= db['title'][0]['text']['content']
             database_data['database list'].append(database)
-        
-        print('Please select the database you want completed tasks to be moved from:')
-        for db in database_data['database list']:
-            print(f"{database_data['database list'].index(db)+1}. {db['name']}")
-        source_db = int(input("Enter the number of the database: "))
-        database_data['source'] = database_data['database list'][source_db-1]['id']
 
-        print('Please select the database you want completed tasks to be moved to:')
-        for db in database_data['database list']:
-            print(f"{database_data['database list'].index(db)+1}. {db['name']}")
-        destination_db = int(input("Enter the number of the database: "))
-        database_data['destination'] = database_data['database list'][destination_db-1]['id']
-        
-        write_yaml(database_data, "src/data/notion.yaml")
-        self.databases = database_data
+        # Write to file
+        if settings is None:
+            settings = {"notion": database_data}
+        else:
+            settings["notion"] = database_data
+        write_yaml(settings, "src/data/settings.yaml")
+        return settings
 
-        return database_data
-
-    def get_db_structure(self):
-        try:
-            self.databases = read_yaml("src/data/notion.yaml")
-                
-        except FileNotFoundError:
-            self.databases = NotionUtils().get_databases()
-
+    def get_db_structure(self, settings: dict):
         url = self.url+"databases/"
         
-        source_url = url + self.databases["source"]
+        source_url = url + settings['notion']["source"]
         source_struct = make_call_with_retry("get", source_url)['properties']
         for prop in source_struct:
             del source_struct[prop]['id']
-        destination_url = url + self.databases["destination"]
+        destination_url = url + settings['notion']["destination"]
         destination_struct = make_call_with_retry("get", destination_url)['properties']
         for prop in destination_struct:
             del destination_struct[prop]['id']
         return source_struct, destination_struct
         
-
-    def match_mt_structure(self,source_struct: dict, dest_struct: dict):
-        url = self.url+"databases/"
-        url += f"{self.databases['destination']}"
+    def match_mt_structure(self, destination, 
+                           source_struct: dict, dest_struct: dict):
+        url = self.url+f"databases/{destination}"
         
         to_create = {k: source_struct[k] for k in source_struct if k not in dest_struct}
         to_destroy = {k: dest_struct[k] for k in dest_struct if k not in source_struct}
