@@ -1,11 +1,9 @@
 @echo off
-REM Set environment variable
-set api_key=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
-
 REM Setting directory to script
 cd /d %~dp0
 
-REM Get current date in YYYY-MM-DD format
+
+REM Get current date and set variables
 for /f "tokens=2-4 delims=/.- " %%a in ('date /t') do (
     set year=%%c
     set month=%%b
@@ -19,19 +17,18 @@ REM Set log path
 set log_path=.\logs\%year%\%month%\%day%.log
 echo Currently in %cd% >> %log_path%
 
-REM Echo the environment variable
-echo The API key is: %api_key%
+REM Set environment variable
+set /p notion_api_key=<%~dp0secrets\notion_api_key.txt
+echo %notion_api_key%  >> %log_path%
 
-REM Add a timestamp to the log
+
 echo [%date% %time%] Starting script >> %log_path%
 
 REM Run the Python script and redirect output to console
 venv\Scripts\python "%~dp0src\main.py" --m >> %log_path% 2>&1
 
-REM Add a completion timestamp
 echo [%date% %time%] Script finished >>  %log_path%
 
-REM Close
 echo [%date% %time%] Closing >>  %log_path%
 exit /b
 

@@ -40,7 +40,7 @@ class NotionUtils:
 
         return database_data
 
-    def get_db_structure(self,source: bool):
+    def get_db_structure(self):
         try:
             self.databases = read_json("src/data/databases.json")
                 

@@ -17,7 +17,7 @@ class MoveTasks:
     def get_mt_tasks(self):
         self.url += f"databases/{self.databases['source']}/query"
         data = {
-            "filter": { "property": "Done", "checkbox": {"equals": True} }
+            "filter": { "property": "Status", "status": {"equals": "Done"} }
         }
         return make_call_with_retry("post", self.url, data)['results']
 

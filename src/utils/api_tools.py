@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 def make_call_with_retry(category: str, url, data = None, retries=3, delay=2):
 
     if "notion" in url:
