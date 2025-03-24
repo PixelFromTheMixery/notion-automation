@@ -37,6 +37,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    config = Config()
     notion_utils = NotionUtils()
     task_mover = MoveTasks()
     clockify_utils = ClockifyUtils()
@@ -50,23 +51,26 @@ if __name__ == "__main__":
                 settings = {}
             setup_values = args.setup.split(",")
             if "mover" in setup_values:
-                settings = notion_utils.get_databases()
+                databases = notion_utils.get_databases(settings)
             if "clockify" in setup_values:
-                settings = clockify_utils.get_projects()
-            Config().setup(settings, setup_values)
+                settings = clockify_utils.setup_clockify(settings)
+                
+            config.setup(settings, setup_values, databases)
         else:
             settings = read_yaml("src/data/settings.yaml")
         
         if args.dbmatch:
             source, dest = notion_utils.get_db_structure(settings)
-            notion_utils.match_mt_structure(settings['notion']['destination'], 
+            notion_utils.match_mt_structure(settings["notion"]["destination"], 
                                             source, dest)
 
         if args.move:
             task_mover.move_mt_tasks(settings)
         
         if args.clockify:
-            clockify_utils.get_projects(settings)
+            source, dest = notion_utils.get_db_structure(settings)
+            settings = clockify_utils.get_projects(settings)
+            clockify_sync.project_sync(settings, source)
         
         if not any(vars(args).values()):
             print("No flags provided. Please provide a flag to run a specific function.")

@@ -19,8 +19,6 @@ echo Currently in %cd% >> %log_path%
 
 REM Set environment variable
 set /p notion_api_key=<%~dp0secrets\notion_api_key.txt
-echo %notion_api_key%  >> %log_path%
-
 
 echo [%date% %time%] Starting script >> %log_path%
 

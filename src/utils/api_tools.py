@@ -9,13 +9,13 @@ def make_call_with_retry(category: str, url, data = None, retries=3, delay=2):
 
     if "notion" in url:
         headers = {
-            "Authorization": f"Bearer {os.getenv('notion_api_key')}",
+            "Authorization": f'Bearer {os.getenv("notion_api_key")}',
             "Content-Type": "application/json",
             "Notion-Version": "2022-06-28",
         }
     if "clockify" in url:
         headers = {
-            "X-Api-Key": os.getenv('clockify_api_key'),
+            "X-Api-Key": os.getenv("clockify_api_key"),
             "Content-Type": "application/json",
         }
 
@@ -42,7 +42,7 @@ def make_call_with_retry(category: str, url, data = None, retries=3, delay=2):
 
         except requests.exceptions.RequestException as e:
             print(f"RequestException on attempt {attempt}: {e}")
-            print(f"json response: {result['message']}")
+            print(f'json response: {result["message"]}')
             if attempt < retries:
                 time.sleep(delay)  # Wait before retrying
             else:
