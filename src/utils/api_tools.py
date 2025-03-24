@@ -26,12 +26,14 @@ def make_call_with_retry(category: str, url, data = None, retries=3, delay=2):
             print(f"Attempt to {category} at {url}. {attempt} of {retries}")
             # Main call logic
             match category:
-                case "post":
-                    response = requests.post(url, headers=headers, json=data)
                 case "get":
                     response = requests.get(url, headers=headers)
                 case "patch":
                     response = requests.patch(url, headers=headers, json=data)
+                case "post":
+                    response = requests.post(url, headers=headers, json=data)
+                case "put":
+                    response = requests.put(url, headers=headers, json=data)
                 case _:
                     raise ValueError(f"Unknown category: {category}")
 

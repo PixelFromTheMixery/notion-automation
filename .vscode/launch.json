@@ -40,5 +40,13 @@
 			"console": "integratedTerminal",
 			"args": ["-s", "mover,clockify"]
 		}
+		{
+			"name": "Testing",
+			"type": "python",
+			"request": "launch",
+			"program": "${workspaceFolder}/src/main.py",
+			"console": "integratedTerminal",
+			"args": ["-t"]
+		}
 	]
 }

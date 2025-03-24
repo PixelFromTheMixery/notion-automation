@@ -14,8 +14,8 @@ class ClockifyUtils:
             settings[data][variable][obj["name"]] = obj["id"]
     
     def get_workspaces(self,settings: dict = None):
-        workspace_url = self.url + "workspaces"
-        workspaces = make_call_with_retry("get", workspace_url)
+        workspace_url = self.url
+        workspaces = make_call_with_retry("get", workspace_url)["results"]
         workspace_list = {}
         for ws in workspaces:
             workspace_list[ws['name']] = ws['id']
@@ -32,8 +32,8 @@ class ClockifyUtils:
         return settings
 
     def get_projects(self, settings: dict):
-        project_url = self.url + f'workspaces/{settings["clockify"]["id"]}/projects'
-        projects = make_call_with_retry("get", project_url)
+        project_url = self.url + f'/{settings["clockify"]["id"]}/projects'
+        projects = make_call_with_retry("get", project_url)["results"]
         if "projects" not in settings["clockify"].keys():
             settings["clockify"]["projects"] = {}
         for project in projects:
@@ -43,8 +43,8 @@ class ClockifyUtils:
         return settings
 
     def get_clients(self,settings: dict):
-        client_url = self.url + f'workspaces/{settings["clockify"]["id"]}/clients'
-        clients = make_call_with_retry("get", client_url)
+        client_url = self.url + f'/{settings["clockify"]["id"]}/clients'
+        clients = make_call_with_retry("get", client_url)["results"]
         if "clients" not in settings["clockify"].keys():
             settings["clockify"]["clients"] = {}
         for client in clients:
@@ -54,8 +54,8 @@ class ClockifyUtils:
         return settings
     
     def get_user(self, settings: dict):
-        user_url = self.url + f'workspaces/{settings["clockify"]["id"]}/users'
-        users = make_call_with_retry("get", user_url)
+        user_url = self.url + f'/{settings["clockify"]["id"]}/users'
+        users = make_call_with_retry("get", user_url)["results"]
         user_list ={}
         for user in users:
             user_list[user["name"]] = user["id"]
@@ -67,10 +67,15 @@ class ClockifyUtils:
         
         return settings
 
-
     def setup_clockify(self, settings:dict):
         settings = self.get_workspaces(settings)
         settings = self.get_projects(settings)
-        settings = self.get_clients(settings)
-        settings = self.get_user(settings)
         return settings
+    
+    def get_tasks_by_project(self, settings, project:str):
+        tasks_url = self.url + f'/{settings["clockify"]["id"]}/projects/{settings["clockify"]["projects"][project]}/tasks?'
+        tasks =  make_call_with_retry("get", tasks_url)
+        task_list = {}
+        for task in tasks:
+            task_list[task["name"]] = task["id"]
+        return task_list

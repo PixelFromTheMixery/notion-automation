@@ -51,7 +51,7 @@ class NotionUtils:
             data = {
                 "properties": props_to_destroy
             }
-            make_call_with_retry("patch", url, data)
+            make_call_with_retry("patch", url, data)["results"]
         
         new_prop = {}
         for prop in to_create:
@@ -64,7 +64,7 @@ class NotionUtils:
             data = {
                 "properties": new_prop
             }
-            make_call_with_retry("patch", url, data)
+            make_call_with_retry("patch", url, data)["results"]
 
     def unpack_db_page(self, task: dict):
         unpacked_data = {}
@@ -99,7 +99,22 @@ class NotionUtils:
                 case "relation":
                     if prop_dict[prop_type] != [] and prop != "Sub-item":
                         page_id = prop_dict[prop_type][0]["id"]
-                        response = make_call_with_retry("get",f"{self.url}/{page_id}")
+                        response = make_call_with_retry("get",f"{self.url}/{page_id}")["results"]
                         page_name = response["properties"]["Name"]["title"][0]["text"]["content"]
                         unpacked_data[prop] = { "rich_text": [{ "text": { "content": page_name }}]}
         return unpacked_data
+    
+    def get_tasks_by_project(self, database:str, project:str):
+        data = {
+            "filter": {
+                "property": "Project",
+                "select": { "equals" :project }
+            }
+        }
+        
+        tasks_url = self.url + f"databases/{database}/query"
+        tasks = make_call_with_retry("post", tasks_url, data)["results"]
+        task_dict = {}
+        for task in tasks:
+            task_dict[task["properties"]["Name"]["title"][0]["text"]["content"]] = task["id"]
+        return task_dict

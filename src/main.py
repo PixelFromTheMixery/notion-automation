@@ -35,6 +35,12 @@ if __name__ == "__main__":
         help="Clockify Integration"
         )
 
+    parser.add_argument(
+        "-t", "--test",
+        action="store_true",
+        help="Test Ground"
+        )
+
     args = parser.parse_args()
 
     config = Config()
@@ -56,6 +62,10 @@ if __name__ == "__main__":
                 settings = clockify_utils.setup_clockify(settings)
                 
             config.setup(settings, setup_values, databases)
+            source, dest = notion_utils.get_db_structure(settings)
+            settings = clockify_utils.get_projects(settings)
+            settings = clockify_sync.project_sync(clockify_utils, settings)
+  
         else:
             settings = read_yaml("src/data/settings.yaml")
         
@@ -70,7 +80,10 @@ if __name__ == "__main__":
         if args.clockify:
             source, dest = notion_utils.get_db_structure(settings)
             settings = clockify_utils.get_projects(settings)
-            clockify_sync.project_sync(settings, source)
+            settings = clockify_sync.project_sync(settings, source)
+        
+        if args.test:
+            clockify_sync.task_sync(clockify_utils, notion_utils, settings)
         
         if not any(vars(args).values()):
             print("No flags provided. Please provide a flag to run a specific function.")

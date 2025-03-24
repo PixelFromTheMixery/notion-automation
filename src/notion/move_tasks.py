@@ -22,7 +22,7 @@ class MoveTasks:
         new_props = NotionUtils().unpack_db_page(task)
         data = {"parent": { "database_id": parent }, "properties": new_props}
         print(f'Creating task: {new_props["Name"]["title"][0]["text"]["content"]} in destination database')
-        make_call_with_retry("post", pages_url, data)
+        make_call_with_retry("post", pages_url, data)["results"]
 
     def new_due_date (self, task:dict, now_datetime, offset):
         freq = task["properties"]["Repeats"]["number"]
@@ -68,7 +68,7 @@ class MoveTasks:
         else:
             print(f'Deleting old task: {task["properties"]["Name"]["title"][0]["text"]["content"]}')
             data = { "archived": True }
-        make_call_with_retry("patch", update_url, data)
+        make_call_with_retry("patch", update_url, data)["results"]
 
     def move_mt_tasks(self, settings:dict):    
         now_datetime, offset = get_current_time()

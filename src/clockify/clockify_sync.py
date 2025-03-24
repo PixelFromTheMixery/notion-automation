@@ -1,48 +1,48 @@
-from clockify.clockify_utils import ClockifyUtils
-from notion.notion_utils import NotionUtils
 from utils.api_tools import make_call_with_retry
 from utils.config import Config
-from utils.files import read_yaml, write_yaml
-
-import random
 
 class ClockifySync:
     def __init__(self):
         self.url = Config().clockify_url
     
-    def project_sync(self, settings: dict, source_struct: dict):
-        project_url = self.url + f'workspaces/{settings["clockify"]["id"]}/projects'
-        
+    def project_sync(self, clockify_utils, settings: dict, source_struct: dict):        
         notion_project_select = source_struct["Project"]["select"]["options"]
         notion_project_list = [project["name"] for project in notion_project_select]
 
         clockify_projects = settings["clockify"]["projects"].keys()
-                
+
         to_create = [project for project in notion_project_list if project not in clockify_projects]
         to_archive = [project for project in clockify_projects if project not in notion_project_list]
 
-
         data = {
-            "billable": True,
-            "clientId": settings["clockify"]["clients"]["Inbox"],
-            "costRate": {
-                "amount": 0,
-                "since": "2020-01-01T00:00:00Z"
-            },
-            "estimate": {
-                "estimate": "PT1H30M",
-                "type": "AUTO"
-            },
-            "hourlyRate": {
-                "amount": 20000,
-                "since": "2020-01-01T00:00:00Z"
-            },
-            
+            "billable": False,
+            "isPublic": True,
         }
 
+        project_url = self.url + f'workspaces/{settings["clockify"]["id"]}/projects'
         for project in to_create:
-            r = lambda: random.randint(0,255)
-            colour = ("#%02X%02X%02X" % (r(),r(),r()))
-            data["colour"] = colour
-            make_call_with_retry("patch", self.url)
+            data["name"]= project
+            make_call_with_retry("post", project_url, data)["results"]
+
+        data = {"archived": True}
+        
+        for project in to_archive:
+            project_url = self.url + f'workspaces/{settings["clockify"]["id"]}/projects/{settings["clockify"]["projects"][project]}'
+            make_call_with_retry("put", project_url, data)["results"]
+        
+        settings = clockify_utils.get_projects(settings)
         return settings
+    
+    def task_sync(self, clockify_utils, notion_utils, settings:dict):
+        for project in settings["clockify"]["projects"].keys():
+            notion_tasks = notion_utils.get_tasks_by_project(settings["notion"]["source"], project)
+            clockify_tasks = clockify_utils.get_tasks_by_project(settings, project)
+            
+            to_create = [task for task in notion_tasks if task not in clockify_tasks.keys()]
+            to_complete = [task for task in clockify_tasks if task not in notion_tasks.keys()]
+            
+            for task in to_create:
+                data = {"name":task }
+                create_url = self.url + f'/{settings["clockify"]["id"]}/projects/{settings["clockify"]["projects"][project]}/tasks'
+                make_call_with_retry("post", create_url, data)
+            

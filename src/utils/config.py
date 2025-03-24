@@ -4,7 +4,7 @@ from utils.helper import list_options
 class Config:
     def __init__(self):
         self.notion_url = "https://api.notion.com/v1/"
-        self.clockify_url = "https://api.clockify.me/api/v1/"
+        self.clockify_url = "https://api.clockify.me/api/v1/workspaces"
     
     def setup(self, settings: dict, services: list, databases=None):
         if "mover" in services:
