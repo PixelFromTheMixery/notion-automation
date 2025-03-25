@@ -75,7 +75,6 @@ class ClockifyUtils:
     def get_tasks_by_project(self, settings, project:str):
         tasks_url = self.url + f'/{settings["clockify"]["id"]}/projects/{settings["clockify"]["projects"][project]}/tasks?'
         tasks =  make_call_with_retry("get", tasks_url)
-        task_list = {}
-        for task in tasks:
-            task_list[task["name"]] = task["id"]
-        return task_list
+        task_list = {task["name"]: task["id"] for task in tasks if task['status'] != "DONE"}
+        done_list = {task["name"]: task["id"] for task in tasks if task['status'] == "DONE"}
+        return task_list, done_list

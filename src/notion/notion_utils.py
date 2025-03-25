@@ -104,6 +104,13 @@ class NotionUtils:
                         unpacked_data[prop] = { "rich_text": [{ "text": { "content": page_name }}]}
         return unpacked_data
     
+    def recreate_task(self, task: dict, parent: str):
+        pages_url = self.url + "pages"
+        new_props = self.unpack_db_page(task)
+        data = {"parent": { "database_id": parent }, "properties": new_props}
+        print(f'Creating task: {new_props["Name"]["title"][0]["text"]["content"]} in destination database')
+        make_call_with_retry("post", pages_url, data)["results"]
+
     def get_tasks_by_project(self, database:str, project:str):
         data = {
             "filter": {
@@ -118,3 +125,11 @@ class NotionUtils:
         for task in tasks:
             task_dict[task["properties"]["Name"]["title"][0]["text"]["content"]] = task["id"]
         return task_dict
+    
+    def update_page(self, data:dict, page_id:str):
+        page_url = self.url + f"pages/{page_id}"
+        make_call_with_retry("patch", page_url, data)
+    
+    def create_page(self, data:dict):
+        page_url = self.url + f"pages"
+        make_call_with_retry("post", page_url, data)

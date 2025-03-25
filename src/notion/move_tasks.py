@@ -1,9 +1,8 @@
 from utils.api_tools import make_call_with_retry
 from utils.config import Config
 from utils.time import get_current_time
-from notion.notion_utils import NotionUtils
 from datetime import timedelta
-import json, re
+import re
 
 class MoveTasks:
     def __init__(self):
@@ -15,14 +14,6 @@ class MoveTasks:
             "filter": { "property": "Status", "status": {"equals": "Done"} }
         }
         return make_call_with_retry("post", get_tasks_url, data)["results"]
-
-
-    def create_task(self, task: dict, parent: str):
-        pages_url = self.url + "pages"
-        new_props = NotionUtils().unpack_db_page(task)
-        data = {"parent": { "database_id": parent }, "properties": new_props}
-        print(f'Creating task: {new_props["Name"]["title"][0]["text"]["content"]} in destination database')
-        make_call_with_retry("post", pages_url, data)["results"]
 
     def new_due_date (self, task:dict, now_datetime, offset):
         freq = task["properties"]["Repeats"]["number"]
@@ -47,7 +38,7 @@ class MoveTasks:
             new_due_value = new_start_datetime.strftime(f"%Y-%m-%d")
         return new_due_value
 
-    def delete_or_reset_mt_task(self, task:dict, now_datetime, offset, n_settings):
+    def delete_or_reset_tm_task(self, task:dict, now_datetime, offset, settings):
         update_url = self.url + f'pages/{task["id"]}'
         if task["properties"]["Every"]["select"] is not None:
             new_date = self.new_due_date(task, now_datetime, offset)
@@ -59,21 +50,21 @@ class MoveTasks:
                 }
             }
 
-            if n_settings["checkbox"]:
-                data["properties"][n_settings["prop_name"]] = { "checkbox": "false" },
+            if settings["notion"]["checkbox"]:
+                data["properties"][settings["notion"]["prop_name"]] = { "checkbox": "false" },
 
             else:
-                data["properties"][n_settings["prop_name"]] = { 
-                    "status": { "name": n_settings["reset_text"] }}
+                data["properties"][settings["notion"]["prop_name"]] = { 
+                    "status": { "name": settings["notion"]["reset_text"] }}
         else:
             print(f'Deleting old task: {task["properties"]["Name"]["title"][0]["text"]["content"]}')
             data = { "archived": True }
         make_call_with_retry("patch", update_url, data)["results"]
 
-    def move_mt_tasks(self, settings:dict):    
+    def move_mt_tasks(self, notion_utils, settings:dict):    
         now_datetime, offset = get_current_time()
         tasks_to_move = self.get_mt_tasks(settings)
         for task in tasks_to_move:
-            self.create_task(task, settings["notion"]["destination"])
-            self.delete_or_reset_mt_task(task, now_datetime, offset, 
-                                         settings["notion"])
+            notion_utils.recreate_task(task, notion_utils, settings["notion"]["destination"])
+            self.delete_or_reset_tm_task(task, now_datetime, offset, 
+                                         settings)

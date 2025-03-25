@@ -36,13 +36,28 @@ class ClockifySync:
     def task_sync(self, clockify_utils, notion_utils, settings:dict):
         for project in settings["clockify"]["projects"].keys():
             notion_tasks = notion_utils.get_tasks_by_project(settings["notion"]["source"], project)
-            clockify_tasks = clockify_utils.get_tasks_by_project(settings, project)
+            clockify_tasks, clockify_done = clockify_utils.get_tasks_by_project(settings, project)
             
-            to_create = [task for task in notion_tasks if task not in clockify_tasks.keys()]
-            to_complete = [task for task in clockify_tasks if task not in notion_tasks.keys()]
-            
+            to_import = [task for task in clockify_tasks if task not in notion_tasks.keys()]
+            to_update = [task for task in clockify_done if task in notion_tasks.keys()]
+            to_create = [task for task in notion_tasks if task not in clockify_tasks.keys() and task not in to_update]
+
             for task in to_create:
                 data = {"name":task }
                 create_url = self.url + f'/{settings["clockify"]["id"]}/projects/{settings["clockify"]["projects"][project]}/tasks'
                 make_call_with_retry("post", create_url, data)
+                
+            for task in to_import:
+                task_data = {
+                    "parent": { "database_id": settings["notion"]["source"]},
+                    "properties":{
+                        "Name": { "title": [{ "text": { "content": task }}]},
+                        "Status": {"status": { "name": "Imported" }},
+                        "Project": { "select": { "name": project }},
+                    }
+                }
+                notion_utils.create_page( task_data )
             
+            for task in to_update:
+                task_data = {"properties": {"Status": {"status": { "name": "Done" }}}}
+                notion_utils.update_page( task_data, notion_tasks[task] )

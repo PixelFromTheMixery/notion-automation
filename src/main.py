@@ -73,18 +73,16 @@ if __name__ == "__main__":
             source, dest = notion_utils.get_db_structure(settings)
             notion_utils.match_mt_structure(settings["notion"]["destination"], 
                                             source, dest)
-
-        if args.move:
-            task_mover.move_mt_tasks(settings)
         
         if args.clockify:
-            source, dest = notion_utils.get_db_structure(settings)
-            settings = clockify_utils.get_projects(settings)
-            settings = clockify_sync.project_sync(settings, source)
-        
-        if args.test:
             clockify_sync.task_sync(clockify_utils, notion_utils, settings)
         
+        if args.move:
+            task_mover.move_mt_tasks(notion_utils, settings)
+
+        if args.test:
+            pass
+            
         if not any(vars(args).values()):
             print("No flags provided. Please provide a flag to run a specific function.")
             parser.print_help()
