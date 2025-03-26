@@ -5,7 +5,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def make_call_with_retry(category: str, url, data = None, retries=3, delay=2, info: str = None):
+
+def make_call_with_retry(
+    category: str, url, data=None, retries=3, delay=2, info: str = None
+):
 
     if "notion" in url:
         headers = {
@@ -19,7 +22,7 @@ def make_call_with_retry(category: str, url, data = None, retries=3, delay=2, in
             "Content-Type": "application/json",
         }
 
-    #if data != None:
+    # if data != None:
     #    print(data)
     for attempt in range(1, retries + 1):
         try:
