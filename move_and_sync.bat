@@ -23,7 +23,7 @@ set /p notion_api_key=<%~dp0secrets\notion_api_key.txt
 echo [%date% %time%] Starting script >> %log_path%
 
 REM Run the Python script and redirect output to console
-venv\Scripts\python "%~dp0src\main.py" -m -c >> %log_path% 2>&1
+venv\Scripts\python "%~dp0src\main.py" --m --c >> %log_path% 2>&1
 
 echo [%date% %time%] Script finished >>  %log_path%
 
