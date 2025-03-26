@@ -56,15 +56,20 @@ if __name__ == "__main__":
             except FileNotFoundError:
                 settings = {}
             setup_values = args.setup.split(",")
+            databases = None
             if "mover" in setup_values:
                 databases = notion_utils.get_databases(settings)
+
             if "clockify" in setup_values:
                 settings = clockify_utils.setup_clockify(settings)
-                
-            config.setup(settings, setup_values, databases)
+
+            if databases is None:
+                config.setup(settings, setup_values)
+            else:
+                config.setup(settings, setup_values, databases)
             source, dest = notion_utils.get_db_structure(settings)
             settings = clockify_utils.get_projects(settings)
-            settings = clockify_sync.project_sync(clockify_utils, settings)
+            settings = clockify_sync.project_sync(clockify_utils, settings, source)
   
         else:
             settings = read_yaml("src/data/settings.yaml")
@@ -75,6 +80,7 @@ if __name__ == "__main__":
                                             source, dest)
         
         if args.clockify:
+            settings = clockify_sync.project_sync(clockify_utils, settings, source)
             clockify_sync.task_sync(clockify_utils, notion_utils, settings)
         
         if args.move:

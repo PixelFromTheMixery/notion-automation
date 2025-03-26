@@ -38,7 +38,7 @@
 			"request": "launch",
 			"program": "${workspaceFolder}/src/main.py",
 			"console": "integratedTerminal",
-			"args": ["-s", "mover,clockify"]
+			"args": ["-s", "clockify"]
 		}
 		{
 			"name": "Testing",
@@ -48,5 +48,14 @@
 			"console": "integratedTerminal",
 			"args": ["-t"]
 		}
+		{
+			"name": "Sync and Move",
+			"type": "python",
+			"request": "launch",
+			"program": "${workspaceFolder}/src/main.py",
+			"console": "integratedTerminal",
+			"args": ["-m", "-c"],
+		}
+		
 	]
 }

@@ -15,7 +15,7 @@ class NotionUtils:
             }
         }
         search_url = self.url + "search"
-        databases = make_call_with_retry("post", search_url, data)["results"]
+        databases = make_call_with_retry("post", search_url, data, info="fetch databases for selection")
         # Dictionary of database id"s and names
         database_list= {}
         for db in databases:
@@ -27,11 +27,11 @@ class NotionUtils:
         url = self.url+"databases/"
         
         source_url = url + settings["notion"]["source"]
-        source_struct = make_call_with_retry("get", source_url)["properties"]
+        source_struct = make_call_with_retry("get", source_url, info="fetch source database structure")["properties"]
         for prop in source_struct:
             del source_struct[prop]["id"]
         destination_url = url + settings["notion"]["destination"]
-        destination_struct = make_call_with_retry("get", destination_url)["properties"]
+        destination_struct = make_call_with_retry("get", destination_url, info="fetch destination databse structure")["properties"]
         for prop in destination_struct:
             del destination_struct[prop]["id"]
         return source_struct, destination_struct
@@ -51,7 +51,7 @@ class NotionUtils:
             data = {
                 "properties": props_to_destroy
             }
-            make_call_with_retry("patch", url, data)["results"]
+            make_call_with_retry("patch", url, data, info="delete destination database properties not in source database")
         
         new_prop = {}
         for prop in to_create:
@@ -64,7 +64,7 @@ class NotionUtils:
             data = {
                 "properties": new_prop
             }
-            make_call_with_retry("patch", url, data)["results"]
+            make_call_with_retry("patch", url, data, info="create source properties in destination database")
 
     def unpack_db_page(self, task: dict):
         unpacked_data = {}
@@ -73,7 +73,7 @@ class NotionUtils:
             prop_type = prop_dict["type"]
 
             if prop == "Sub-item":
-                print()
+                pass
             match prop_type:
                 case "title":
                     title = prop_dict[prop_type][0]["text"]["content"]
@@ -99,7 +99,7 @@ class NotionUtils:
                 case "relation":
                     if prop_dict[prop_type] != [] and prop != "Sub-item":
                         page_id = prop_dict[prop_type][0]["id"]
-                        response = make_call_with_retry("get",f"{self.url}/{page_id}")["results"]
+                        response = make_call_with_retry("get",f"{self.url}/{page_id}", info="fetch related page/database associated with page")
                         page_name = response["properties"]["Name"]["title"][0]["text"]["content"]
                         unpacked_data[prop] = { "rich_text": [{ "text": { "content": page_name }}]}
         return unpacked_data
@@ -108,8 +108,7 @@ class NotionUtils:
         pages_url = self.url + "pages"
         new_props = self.unpack_db_page(task)
         data = {"parent": { "database_id": parent }, "properties": new_props}
-        print(f'Creating task: {new_props["Name"]["title"][0]["text"]["content"]} in destination database')
-        make_call_with_retry("post", pages_url, data)["results"]
+        make_call_with_retry("post", pages_url, data, info=f'recreate task {task["properties"]["Name"]["title"][0]["text"]["content"]} in destination database')
 
     def get_tasks_by_project(self, database:str, project:str):
         data = {
@@ -120,16 +119,16 @@ class NotionUtils:
         }
         
         tasks_url = self.url + f"databases/{database}/query"
-        tasks = make_call_with_retry("post", tasks_url, data)["results"]
+        tasks = make_call_with_retry("post", tasks_url, data, info=f"get all tasks in notion project: {project}")
         task_dict = {}
         for task in tasks:
             task_dict[task["properties"]["Name"]["title"][0]["text"]["content"]] = task["id"]
         return task_dict
     
-    def update_page(self, data:dict, page_id:str):
+    def update_page(self, data:dict, page_id:str, name:str):
         page_url = self.url + f"pages/{page_id}"
-        make_call_with_retry("patch", page_url, data)
+        make_call_with_retry("patch", page_url, data, info=f'updating page {name}')
     
     def create_page(self, data:dict):
         page_url = self.url + f"pages"
-        make_call_with_retry("post", page_url, data)
+        make_call_with_retry("post", page_url, data, info=f'creating page {data["properties"]["Name"]["title"][0]["text"]["content"]}')

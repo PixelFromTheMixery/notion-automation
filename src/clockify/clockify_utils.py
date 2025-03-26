@@ -15,7 +15,7 @@ class ClockifyUtils:
     
     def get_workspaces(self,settings: dict = None):
         workspace_url = self.url
-        workspaces = make_call_with_retry("get", workspace_url)["results"]
+        workspaces = make_call_with_retry("get", workspace_url, info="fetch clockify workspaces for selection")
         workspace_list = {}
         for ws in workspaces:
             workspace_list[ws['name']] = ws['id']
@@ -33,7 +33,7 @@ class ClockifyUtils:
 
     def get_projects(self, settings: dict):
         project_url = self.url + f'/{settings["clockify"]["id"]}/projects'
-        projects = make_call_with_retry("get", project_url)["results"]
+        projects = make_call_with_retry("get", project_url, info="fetch clockify workspace projects")
         if "projects" not in settings["clockify"].keys():
             settings["clockify"]["projects"] = {}
         for project in projects:
@@ -44,7 +44,7 @@ class ClockifyUtils:
 
     def get_clients(self,settings: dict):
         client_url = self.url + f'/{settings["clockify"]["id"]}/clients'
-        clients = make_call_with_retry("get", client_url)["results"]
+        clients = make_call_with_retry("get", client_url, info="fetch clockify workspace clients")
         if "clients" not in settings["clockify"].keys():
             settings["clockify"]["clients"] = {}
         for client in clients:
@@ -55,7 +55,7 @@ class ClockifyUtils:
     
     def get_user(self, settings: dict):
         user_url = self.url + f'/{settings["clockify"]["id"]}/users'
-        users = make_call_with_retry("get", user_url)["results"]
+        users = make_call_with_retry("get", user_url, info="fetch workspace users for selection")
         user_list ={}
         for user in users:
             user_list[user["name"]] = user["id"]
@@ -74,7 +74,7 @@ class ClockifyUtils:
     
     def get_tasks_by_project(self, settings, project:str):
         tasks_url = self.url + f'/{settings["clockify"]["id"]}/projects/{settings["clockify"]["projects"][project]}/tasks?'
-        tasks =  make_call_with_retry("get", tasks_url)
+        tasks =  make_call_with_retry("get", tasks_url, info=f"fetch tasks within clockify project: {project}")
         task_list = {task["name"]: task["id"] for task in tasks if task['status'] != "DONE"}
         done_list = {task["name"]: task["id"] for task in tasks if task['status'] == "DONE"}
         return task_list, done_list

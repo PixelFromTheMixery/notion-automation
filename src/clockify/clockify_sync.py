@@ -1,5 +1,6 @@
 from utils.api_tools import make_call_with_retry
 from utils.config import Config
+from utils.files import write_yaml
 
 class ClockifySync:
     def __init__(self):
@@ -22,15 +23,17 @@ class ClockifySync:
         project_url = self.url + f'workspaces/{settings["clockify"]["id"]}/projects'
         for project in to_create:
             data["name"]= project
-            make_call_with_retry("post", project_url, data)["results"]
+            make_call_with_retry("post", project_url, data, info="create project in clockify")
 
         data = {"archived": True}
         
         for project in to_archive:
             project_url = self.url + f'workspaces/{settings["clockify"]["id"]}/projects/{settings["clockify"]["projects"][project]}'
-            make_call_with_retry("put", project_url, data)["results"]
+            make_call_with_retry("put", project_url, data, info="archive project in clockify")
         
         settings = clockify_utils.get_projects(settings)
+        write_yaml(settings, "src/data/settings.yaml")
+        
         return settings
     
     def task_sync(self, clockify_utils, notion_utils, settings:dict):
@@ -45,7 +48,7 @@ class ClockifySync:
             for task in to_create:
                 data = {"name":task }
                 create_url = self.url + f'/{settings["clockify"]["id"]}/projects/{settings["clockify"]["projects"][project]}/tasks'
-                make_call_with_retry("post", create_url, data)
+                make_call_with_retry("post", create_url, data, info="create task in clockify")
                 
             for task in to_import:
                 task_data = {
@@ -60,4 +63,4 @@ class ClockifySync:
             
             for task in to_update:
                 task_data = {"properties": {"Status": {"status": { "name": "Done" }}}}
-                notion_utils.update_page( task_data, notion_tasks[task] )
+                notion_utils.update_page( task_data, notion_tasks[task], task )

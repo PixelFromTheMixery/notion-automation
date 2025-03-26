@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def make_call_with_retry(category: str, url, data = None, retries=3, delay=2):
+def make_call_with_retry(category: str, url, data = None, retries=3, delay=2, info: str = None):
 
     if "notion" in url:
         headers = {
@@ -23,7 +23,7 @@ def make_call_with_retry(category: str, url, data = None, retries=3, delay=2):
     #    print(data)
     for attempt in range(1, retries + 1):
         try:
-            print(f"Attempt to {category} at {url}. {attempt} of {retries}")
+            print(f"Attempt to {info}. {attempt} of {retries}")
             # Main call logic
             match category:
                 case "get":
@@ -40,7 +40,10 @@ def make_call_with_retry(category: str, url, data = None, retries=3, delay=2):
             # Return response if successful
             result = response.json()
             response.raise_for_status()
-            return result
+            if "results" in result:
+                return result["results"]
+            else:
+                return result
 
         except requests.exceptions.RequestException as e:
             print(f"RequestException on attempt {attempt}: {e}")

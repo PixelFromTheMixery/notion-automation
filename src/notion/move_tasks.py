@@ -13,7 +13,7 @@ class MoveTasks:
         data = {
             "filter": { "property": "Status", "status": {"equals": "Done"} }
         }
-        return make_call_with_retry("post", get_tasks_url, data)["results"]
+        return make_call_with_retry("post", get_tasks_url, data, info="fetch tasks from source database")
 
     def new_due_date (self, task:dict, now_datetime, offset):
         freq = task["properties"]["Repeats"]["number"]
@@ -56,15 +56,15 @@ class MoveTasks:
             else:
                 data["properties"][settings["notion"]["prop_name"]] = { 
                     "status": { "name": settings["notion"]["reset_text"] }}
+                make_call_with_retry("patch", update_url, data, info=f' reset task {task["properties"]["Name"]["title"][0]["text"]["content"]}')
         else:
-            print(f'Deleting old task: {task["properties"]["Name"]["title"][0]["text"]["content"]}')
             data = { "archived": True }
-        make_call_with_retry("patch", update_url, data)["results"]
+            make_call_with_retry("patch", update_url, data, info=f'delete task {task["properties"]["Name"]["title"][0]["text"]["content"]}')
 
     def move_mt_tasks(self, notion_utils, settings:dict):    
         now_datetime, offset = get_current_time()
         tasks_to_move = self.get_mt_tasks(settings)
         for task in tasks_to_move:
-            notion_utils.recreate_task(task, notion_utils, settings["notion"]["destination"])
+            notion_utils.recreate_task(task, settings["notion"]["destination"])
             self.delete_or_reset_tm_task(task, now_datetime, offset, 
                                          settings)
