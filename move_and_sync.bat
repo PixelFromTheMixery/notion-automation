@@ -11,22 +11,35 @@ for /f "tokens=2-4 delims=/.- " %%a in ('date /t') do (
 )
 
 REM Check Month Directory
-if not exist logs\%year%\%month%\ mkdir logs\%year%\%month%
+if not exist logs\%year%\%month%\ md logs\%year%\%month%
 
 REM Set log path
 set log_path=.\logs\%year%\%month%\%day%.log
+echo Currently in %cd%
 echo Currently in %cd% >> %log_path%
 
 REM Set environment variable
-set /p notion_api_key=<%~dp0secrets\notion_api_key.txt
+set /p notion_api_key=< %~dp0secrets\notion_api_key.txt
 
+REM Ensure Python exists
+if not exist "%~dp0venv\Scripts\python.exe" (
+    echo [%date% %time%] Python executable not found! Exiting...
+    echo [%date% %time%] Python executable not found! Exiting... >> %log_path%
+    exit /b 1
+)
+
+echo [%date% %time%] Starting script 
 echo [%date% %time%] Starting script >> %log_path%
 
 REM Run the Python script and redirect output to console
-venv\Scripts\python "%~dp0src\main.py" --m --c >> %log_path% 2>&1
+echo Processing...
+call "%~dp0venv\Scripts\activate"
+call python "%~dp0src\main.py" -m -c >> %log_path% 2>&1
 
+echo [%date% %time%] Script finished
 echo [%date% %time%] Script finished >>  %log_path%
 
+echo [%date% %time%] Closing
 echo [%date% %time%] Closing >>  %log_path%
 exit /b
 
