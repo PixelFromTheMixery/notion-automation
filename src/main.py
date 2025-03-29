@@ -4,7 +4,7 @@ from notion.move_tasks import MoveTasks
 from notion.notion_utils import NotionUtils
 from config import Config
 
-import argparse, sys, yaml
+import argparse, sys, time, yaml
 
 if __name__ == "__main__":
 
@@ -48,9 +48,16 @@ if __name__ == "__main__":
             config.data = yaml.load(f, Loader=yaml.SafeLoader)
         print("State loaded")
     except FileNotFoundError:
-        if not args.setup:
+        if args.setup:
+            setup_values = args.setup.split(",")
+            config.setup(setup_values)
+        else:
+            print("-"*30)
             print("Please run setup.bat first")
+            print("-"*30)
+            time.sleep(5)
             sys.exit()
+        
     notion_utils = NotionUtils()
     task_mover = MoveTasks()
     if args.clockify or "clockify" in args.setup:
@@ -60,7 +67,6 @@ if __name__ == "__main__":
     try:
         if args.setup:
             setup_values = args.setup.split(",")
-            config.setup(setup_values)
             config.set_master_db(notion_utils)
             if "mover" in setup_values:
                 config.setup_mover(notion_utils)
@@ -74,7 +80,6 @@ if __name__ == "__main__":
                     )
                 )
                 clockify_sync.setup_tasks(clockify_utils,notion_utils, config)
-
         if args.dbmatch:
             notion_utils.match_mt_structure()
 

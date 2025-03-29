@@ -18,9 +18,6 @@ set log_path=.\logs\%year%\%month%\%day%.log
 echo Currently in %cd%
 echo Currently in %cd% >> %log_path%
 
-REM Set environment variable
-set /p notion_api_key=< %~dp0secrets\notion_api_key.txt
-
 REM Ensure Python exists
 if not exist "%~dp0venv\Scripts\python.exe" (
     echo [%date% %time%] Python executable not found! Exiting...

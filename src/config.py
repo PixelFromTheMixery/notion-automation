@@ -20,7 +20,7 @@ class Config:
     def setup(self, setup_values):
         print("File not found, making fresh file")
         self.data["system"] = {}
-        self.data["system"]["notion_url"] = "https://api.notion.com/v1/"
+        self.data["system"]["notion_url"] = "https://api.notion.com/v1"
         self.data["system"]["notion_key"] = input("Paste your Notion API key: ")
         if "clockify" in setup_values:
             self.data["system"]["clockify_url"] = "https://api.clockify.me/api/v1/workspaces"

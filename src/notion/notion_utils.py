@@ -118,19 +118,7 @@ class NotionUtils:
                             "rich_text": [{"text": {"content": content}}]
                         }
                 case "relation":
-                    if prop_dict[prop_type] != [] and prop != "Sub-item":
-                        page_id = prop_dict[prop_type][0]["id"]
-                        response = make_call_with_retry(
-                            "get",
-                            f"{self.url}/{page_id}",
-                            info="fetch related page/database associated with page",
-                        )
-                        page_name = response["properties"]["Name"]["title"][0]["text"][
-                            "content"
-                        ]
-                        unpacked_data[prop] = {
-                            "rich_text": [{"text": {"content": page_name}}]
-                        }
+                    pass
         return unpacked_data
 
     def recreate_task(self, task: dict, parent: str):
@@ -146,11 +134,13 @@ class NotionUtils:
 
     def get_tasks(self, config, project: str):
         tasks_url = self.url + f'databases/{config.data["notion"]["task_db"]}/query'
+        prop_type = config.data["notion"]["mover"]["type"]
+        prop_name = config.data["notion"]["mover"]["name"]
         if project == "Done":
-            if config.data["notion"]["mover"]["type"] == "status":
+            if prop_type == "status":
                 data = {
                     "filter": {
-                        "property": config.data["notion"]["mover"]["name"], 
+                        "property": prop_name, 
                         "status": {
                             "equals": "Done"
                             }
@@ -159,7 +149,7 @@ class NotionUtils:
             else:
                 data = {
                     "filter": {
-                        "property": config.data["notion"]["mover"]["name"],
+                        "property": prop_name,
                         "checkbox": True
                         }
                     }
@@ -177,11 +167,17 @@ class NotionUtils:
         if project == "Done": return tasks
         else:
             task_dict = {}
+            done_task = {}
             for task in tasks:
-                task_dict[task["properties"]["Name"]["title"][0]["text"]["content"]] = task[
-                    "id"
-                ]
-            return task_dict
+                if prop_type == "status" and task["properties"][prop_name]["status"]["name"] != "Done":
+                    task_dict[task["properties"]["Name"]["title"][0]["text"]["content"]] = task["id"]
+                elif prop_type == "status" and task["properties"][prop_name]["status"]["name"] == "Done":
+                    done_task[task["properties"]["Name"]["title"][0]["text"]["content"]] = task["id"]
+                elif prop_type == "checkbox" and task["properties"][prop_name]["checkbox"] == False:
+                    task_dict[task["properties"]["Name"]["title"][0]["text"]["content"]] = task["id"]
+                elif prop_type == "checkbox" and task["properties"][prop_name]["checkbox"] == True:
+                    done_task[task["properties"]["Name"]["title"][0]["text"]["content"]] = task["id"]
+            return task_dict, done_task
 
     def update_page(self, data: dict, page_id: str, name: str):
         page_url = self.url + f"pages/{page_id}"
