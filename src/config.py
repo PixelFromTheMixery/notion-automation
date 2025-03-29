@@ -54,7 +54,7 @@ class Config:
                 "Please select your name:"
             )["id"]
         
-        self.data["notion"]["history"] = list_options(
+        self.data["notion"]["mover"]["history"] = list_options(
                 notion_utils.get_databases(),
                 "Enter the number of the database: ",
                 "Please select the database you want completed tasks to be moved to:",
