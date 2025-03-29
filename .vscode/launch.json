@@ -38,7 +38,7 @@
 			"request": "launch",
 			"program": "${workspaceFolder}/src/main.py",
 			"console": "integratedTerminal",
-			"args": ["-s", "clockify"]
+			"args": ["-s", "clockify,mover"]
 		}
 		{
 			"name": "Testing",

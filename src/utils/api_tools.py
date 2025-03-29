@@ -1,29 +1,28 @@
 import requests
 import time
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
-
+from config import Config
 
 def make_call_with_retry(
-    category: str, url, data=None, retries=3, delay=2, info: str = None
+    category: str,
+    url,
+    info,
+    data=None,
+    retries=3,
+    delay=2,
 ):
-
     if "notion" in url:
         headers = {
-            "Authorization": f'Bearer {os.getenv("notion_api_key")}',
+            "Authorization": f'Bearer {Config().data["system"]["notion_key"]}',
             "Content-Type": "application/json",
             "Notion-Version": "2022-06-28",
         }
     if "clockify" in url:
         headers = {
-            "X-Api-Key": os.getenv("clockify_api_key"),
+            "X-Api-Key": Config().data["system"]["clockify_key"],
             "Content-Type": "application/json",
         }
 
-    # if data != None:
-    #    print(data)
     for attempt in range(1, retries + 1):
         try:
             print(f"Attempt to {info}. {attempt} of {retries}")

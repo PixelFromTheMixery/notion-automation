@@ -1,27 +1,24 @@
 from utils.api_tools import make_call_with_retry
-from utils.config import Config
-from utils.files import write_yaml
+from config import Config
 
 
 class ClockifySync:
     def __init__(self):
-        self.url = Config().clockify_url
+        self.url = Config().data["system"]["clockify_url"]
 
-    def project_sync(self, clockify_utils, settings: dict, source_struct: dict):
-        notion_project_select = source_struct["Project"]["select"]["options"]
-        notion_project_list = [project["name"] for project in notion_project_select]
-
-        clockify_projects = settings["clockify"]["projects"].keys()
+    def project_sync(self, notion_projects: list):
+        config = Config()
+        clockify_projects = config.data["clockify"]["projects"].keys()
 
         to_create = [
             project
-            for project in notion_project_list
+            for project in notion_projects
             if project not in clockify_projects
         ]
         to_archive = [
             project
             for project in clockify_projects
-            if project not in notion_project_list
+            if project not in notion_projects
         ]
 
         data = {
@@ -29,11 +26,11 @@ class ClockifySync:
             "isPublic": True,
         }
 
-        project_url = self.url + f'workspaces/{settings["clockify"]["id"]}/projects'
+        workspace_url = self.url + f'workspaces/{config.data["clockify"]["workspace"]}/projects'
         for project in to_create:
             data["name"] = project
             make_call_with_retry(
-                "post", project_url, data, info="create project in clockify"
+                "post", workspace_url, "create project in clockify", data
             )
 
         data = {"archived": True}
@@ -41,53 +38,66 @@ class ClockifySync:
         for project in to_archive:
             project_url = (
                 self.url
-                + f'workspaces/{settings["clockify"]["id"]}/projects/{settings["clockify"]["projects"][project]}'
+                + f'workspaces/{config.data["clockify"]["workspace"]}/projects/{config.data["clockify"]["projects"][project]}'
             )
             make_call_with_retry(
                 "put", project_url, data, info="archive project in clockify"
             )
 
-        settings = clockify_utils.get_projects(settings)
-        write_yaml(settings, "src/data/settings.yaml")
-
-        return settings
-
-    def task_sync(self, clockify_utils, notion_utils, settings: dict):
-        for project in settings["clockify"]["projects"].keys():
-            notion_tasks = notion_utils.get_tasks_by_project(
-                settings["notion"]["source"], project
+    def setup_tasks(self, clockify_utils, notion_utils, config):
+        workspace_id = config.data["clockify"]["workspace"]
+        for project in config.data["clockify"]["projects"].keys():
+            project_id = config.data["clockify"]["projects"][project]
+            notion_tasks = notion_utils.get_tasks(
+                config, 
+                project
             )
             clockify_tasks, clockify_done = clockify_utils.get_tasks_by_project(
-                settings, project
+                workspace_id,
+                project_id,
+                project
             )
 
             to_import = [
-                task for task in clockify_tasks if task not in notion_tasks.keys()
+                task for task in clockify_tasks 
+                if task not in notion_tasks.keys()
             ]
-            to_update = [task for task in clockify_done if task in notion_tasks.keys()]
+            to_update = [
+                task for task in clockify_done 
+                if task in notion_tasks.keys()]
             to_create = [
                 task
                 for task in notion_tasks
-                if task not in clockify_tasks.keys() and task not in to_update
+                if task not in clockify_tasks.keys() 
+                and task not in to_update
             ]
 
             for task in to_create:
                 data = {"name": task}
                 create_url = (
                     self.url
-                    + f'/{settings["clockify"]["id"]}/projects/{settings["clockify"]["projects"][project]}/tasks'
+                    + f'/{workspace_id}/projects/{project_id}/tasks'
                 )
                 make_call_with_retry(
-                    "post", create_url, data, info="create task in clockify"
+                    "post", 
+                    create_url, 
+                    "create task in clockify",
+                    data
                 )
 
             for task in to_import:
                 task_data = {
-                    "parent": {"database_id": settings["notion"]["source"]},
+                    "parent": {"database_id": config.data["notion"]["task_db"]},
                     "properties": {
                         "Name": {"title": [{"text": {"content": task}}]},
                         "Status": {"status": {"name": "Imported"}},
                         "Project": {"select": {"name": project}},
+                        "Assignee": {
+                            "people": [{
+                                "object": "user", 
+                                "id": config.data["notion"]["user"] 
+                            }]
+                        }
                     },
                 }
                 notion_utils.create_page(task_data)

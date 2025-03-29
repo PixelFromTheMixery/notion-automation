@@ -32,9 +32,7 @@ echo [%date% %time%] Starting script
 echo [%date% %time%] Starting script >> %log_path%
 
 REM Run the Python script and redirect output to console
-echo Processing...
-call "%~dp0venv\Scripts\activate"
-call python "%~dp0src\main.py" -m -c >> %log_path% 2>&1
+call "%~dp0venv\Scripts\python.exe" "%~dp0src\main.py" -m -c >> %log_path% 2>&1
 
 echo [%date% %time%] Script finished
 echo [%date% %time%] Script finished >>  %log_path%

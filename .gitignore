@@ -1,10 +1,9 @@
 # Secrets
-secrets/*
+settings.yaml
 .env
 
 # Logs
 logs/
-src/data/*
 
 #venv
 venv/

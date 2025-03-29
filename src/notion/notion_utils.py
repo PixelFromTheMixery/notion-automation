@@ -1,46 +1,47 @@
 from utils.api_tools import make_call_with_retry
-from utils.config import Config
-from utils.files import read_yaml, write_yaml
-
+from config import Config
 
 class NotionUtils:
     def __init__(self):
-        self.url = Config().notion_url
+        self.url = Config().data["system"]["notion_url"]
 
-    def get_databases(self, settings: dict = None):
-        # Filter to search only for databases
+    def get_users(self):
+        user_url = self.url + "users"
+        users = make_call_with_retry(
+            "get", user_url, "get users from notion"
+        )
+        return users
+
+    def get_databases(self):
         data = {"filter": {"value": "database", "property": "object"}}
         search_url = self.url + "search"
         databases = make_call_with_retry(
-            "post", search_url, data, info="fetch databases for selection"
+            "post", search_url, "fetch databases for selection", data
         )
-        # Dictionary of database id"s and names
-        database_list = {}
-        for db in databases:
-            db_name = db["title"][0]["text"]["content"]
-            database_list[db_name] = db["id"]
-        return database_list
+        return databases
 
-    def get_db_structure(self, settings: dict):
+    def get_db_structure(self, database_id):
         url = self.url + "databases/"
 
-        source_url = url + settings["notion"]["source"]
-        source_struct = make_call_with_retry(
-            "get", source_url, info="fetch source database structure"
-        )["properties"]
+        source_url = url + database_id
+        struct = make_call_with_retry(
+            "get", source_url, info=f'fetch database structure'
+        )["properties"]        
+
+        filtered = {k: v for k, v in struct.items() if struct[k]["type"] != "relation"}
+        
+        return filtered
+
+    def match_mt_structure(self):
+        config = Config()
+        source_struct = self.get_db_structure(config.data["notion"]["task_db"])
         for prop in source_struct:
             del source_struct[prop]["id"]
-        destination_url = url + settings["notion"]["destination"]
-        destination_struct = make_call_with_retry(
-            "get", destination_url, info="fetch destination databse structure"
-        )["properties"]
-        for prop in destination_struct:
-            del destination_struct[prop]["id"]
-        return source_struct, destination_struct
 
-    def match_mt_structure(self, destination, source_struct: dict, dest_struct: dict):
-        url = self.url + f"databases/{destination}"
-
+        dest_struct = self.get_db_structure(config.data["notion"]["mover"]["history"])
+        for prop in dest_struct.keys():
+            del dest_struct[prop]["id"]
+        
         to_create = {k: source_struct[k] for k in source_struct if k not in dest_struct}
         to_destroy = {k: dest_struct[k] for k in dest_struct if k not in source_struct}
 
@@ -48,13 +49,16 @@ class NotionUtils:
 
         # Create a dictionary where each property in dest_struct is a key, with None as its value
         props_to_destroy = {prop: None for prop in to_destroy}
+        
+        db_url = self.url + f'databases/{config.data["notion"]["mover"]["history"]}'
+
         if len(props_to_destroy) != 0:
             data = {"properties": props_to_destroy}
             make_call_with_retry(
                 "patch",
-                url,
-                data,
-                info="delete destination database properties not in source database",
+                db_url,
+                "delete destination database properties not in source database",
+                data
             )
 
         new_prop = {}
@@ -66,10 +70,16 @@ class NotionUtils:
             data = {"properties": new_prop}
             make_call_with_retry(
                 "patch",
-                url,
+                db_url,
+                "create source properties in history database",
                 data,
-                info="create source properties in destination database",
             )
+
+    def get_project_list(self, database_id):
+        notion_projects = self.get_db_structure(
+            database_id
+        )["Project"]["select"]["options"]
+        return [project["name"] for project in notion_projects]
 
     def unpack_db_page(self, task: dict):
         unpacked_data = {}
@@ -130,33 +140,63 @@ class NotionUtils:
         make_call_with_retry(
             "post",
             pages_url,
-            data,
-            info=f'recreate task {task["properties"]["Name"]["title"][0]["text"]["content"]} in destination database',
+            f'recreate task {task["properties"]["Name"]["title"][0]["text"]["content"]} in destination database',
+            data
         )
 
-    def get_tasks_by_project(self, database: str, project: str):
-        data = {"filter": {"property": "Project", "select": {"equals": project}}}
-
-        tasks_url = self.url + f"databases/{database}/query"
+    def get_tasks(self, config, project: str):
+        tasks_url = self.url + f'databases/{config.data["notion"]["task_db"]}/query'
+        if project == "Done":
+            if config.data["notion"]["mover"]["type"] == "status":
+                data = {
+                    "filter": {
+                        "property": config.data["notion"]["mover"]["name"], 
+                        "status": {
+                            "equals": "Done"
+                            }
+                        }
+                    }
+            else:
+                data = {
+                    "filter": {
+                        "property": config.data["notion"]["mover"]["name"],
+                        "checkbox": True
+                        }
+                    }
+            url_info = "get all completed tasks"
+        else:
+            data = {"filter": {"property": "Project", "select": {"equals": project}}}
+            url_info = f"get all tasks in notion project: {project}"
+        
         tasks = make_call_with_retry(
-            "post", tasks_url, data, info=f"get all tasks in notion project: {project}"
+            "post", 
+            tasks_url, 
+            url_info,
+            data
         )
-        task_dict = {}
-        for task in tasks:
-            task_dict[task["properties"]["Name"]["title"][0]["text"]["content"]] = task[
-                "id"
-            ]
-        return task_dict
+        if project == "Done": return tasks
+        else:
+            task_dict = {}
+            for task in tasks:
+                task_dict[task["properties"]["Name"]["title"][0]["text"]["content"]] = task[
+                    "id"
+                ]
+            return task_dict
 
     def update_page(self, data: dict, page_id: str, name: str):
         page_url = self.url + f"pages/{page_id}"
-        make_call_with_retry("patch", page_url, data, info=f"updating page {name}")
+        make_call_with_retry(
+            "patch", 
+            page_url, 
+            f"updating page {name}", 
+            data
+        )
 
     def create_page(self, data: dict):
         page_url = self.url + f"pages"
         make_call_with_retry(
             "post",
             page_url,
-            data,
-            info=f'creating page {data["properties"]["Name"]["title"][0]["text"]["content"]}',
+            f'creating page {data["properties"]["Name"]["title"][0]["text"]["content"]}',
+            data
         )

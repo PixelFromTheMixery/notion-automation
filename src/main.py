@@ -4,8 +4,7 @@ from clockify.clockify_sync import ClockifySync
 from clockify.clockify_utils import ClockifyUtils
 from notion.move_tasks import MoveTasks
 from notion.notion_utils import NotionUtils
-from utils.config import Config
-from utils.files import read_yaml
+from config import Config
 
 if __name__ == "__main__":
 
@@ -43,49 +42,44 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    setup_values = args.setup.split(",")
     config = Config()
+    config.setup(setup_values)
     notion_utils = NotionUtils()
     task_mover = MoveTasks()
-    clockify_utils = ClockifyUtils()
-    clockify_sync = ClockifySync()
+    if args.clockify or "clockify" in args.setup:
+        clockify_utils = ClockifyUtils()
+        clockify_sync = ClockifySync()
 
     try:
         if args.setup:
-            try:
-                settings = read_yaml("src/data/settings.yaml")
-            except FileNotFoundError:
-                settings = {}
-            setup_values = args.setup.split(",")
-            databases = None
+            config.set_master_db(notion_utils)
             if "mover" in setup_values:
-                databases = notion_utils.get_databases(settings)
-
+                config.setup_mover(notion_utils)
+                notion_utils.match_mt_structure()
+                task_mover.move_tasks(notion_utils)
             if "clockify" in setup_values:
-                settings = clockify_utils.setup_clockify(settings)
-
-            if databases is None:
-                config.setup(settings, setup_values)
-            else:
-                config.setup(settings, setup_values, databases)
-            source, dest = notion_utils.get_db_structure(settings)
-            settings = clockify_utils.get_projects(settings)
-            settings = clockify_sync.project_sync(clockify_utils, settings, source)
-
-        else:
-            settings = read_yaml("src/data/settings.yaml")
+                config.setup_clockify(clockify_utils)
+                clockify_sync.project_sync(
+                    notion_utils.get_project_list(
+                        config.data["notion"]["task_db"]
+                    )
+                )
+                clockify_sync.setup_tasks(clockify_utils,notion_utils, config)
 
         if args.dbmatch:
-            source, dest = notion_utils.get_db_structure(settings)
-            notion_utils.match_mt_structure(settings["notion"]["destination"], 
-                                            source, dest)
+            notion_utils.match_mt_structure()
 
         if args.clockify:
-            source, dest = notion_utils.get_db_structure(settings)
-            settings = clockify_sync.project_sync(clockify_utils, settings, source)
-            clockify_sync.task_sync(clockify_utils, notion_utils, settings)
+            clockify_sync.project_sync(
+                notion_utils.get_project_list(
+                        config.data["notion"]["task_db"]
+                    )
+            )
+            clockify_sync.setup_tasks(clockify_utils,notion_utils, config)
 
         if args.move:
-            task_mover.move_mt_tasks(notion_utils, settings)
+            task_mover.move_tasks(notion_utils)
 
         if args.test:
             pass
