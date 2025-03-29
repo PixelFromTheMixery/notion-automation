@@ -1,10 +1,10 @@
-import sys
-import argparse
 from clockify.clockify_sync import ClockifySync
 from clockify.clockify_utils import ClockifyUtils
 from notion.move_tasks import MoveTasks
 from notion.notion_utils import NotionUtils
 from config import Config
+
+import argparse, sys, yaml
 
 if __name__ == "__main__":
 
@@ -42,9 +42,15 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    setup_values = args.setup.split(",")
     config = Config()
-    config.setup(setup_values)
+    try:
+        with open(config.file_path, "r") as f:
+            config.data = yaml.load(f, Loader=yaml.SafeLoader)
+        print("State loaded")
+    except FileNotFoundError:
+        if not args.setup:
+            print("Please run setup.bat first")
+            sys.exit()
     notion_utils = NotionUtils()
     task_mover = MoveTasks()
     if args.clockify or "clockify" in args.setup:
@@ -53,6 +59,8 @@ if __name__ == "__main__":
 
     try:
         if args.setup:
+            setup_values = args.setup.split(",")
+            config.setup(setup_values)
             config.set_master_db(notion_utils)
             if "mover" in setup_values:
                 config.setup_mover(notion_utils)

@@ -18,19 +18,14 @@ class Config:
             Config.initialized = True
 
     def setup(self, setup_values):
-        try:
-            with open(Config.file_path, "r") as f:
-                self.data = yaml.load(f, Loader=yaml.SafeLoader)
-            print("State loaded")
-        except FileNotFoundError:
-            print("File not found, making fresh file")
-            self.data["system"] = {}
-            self.data["system"]["notion_url"] = "https://api.notion.com/v1/"
-            self.data["system"]["notion_key"] = input("Paste your Notion API key: ")
-            if "clockify" in setup_values:
-                self.data["system"]["clockify_url"] = "https://api.clockify.me/api/v1/workspaces"
-                self.data["system"]["clockify_key"] = input("Paste your Clockify API key: ")
-            self.save_to_yaml()
+        print("File not found, making fresh file")
+        self.data["system"] = {}
+        self.data["system"]["notion_url"] = "https://api.notion.com/v1/"
+        self.data["system"]["notion_key"] = input("Paste your Notion API key: ")
+        if "clockify" in setup_values:
+            self.data["system"]["clockify_url"] = "https://api.clockify.me/api/v1/workspaces"
+            self.data["system"]["clockify_key"] = input("Paste your Clockify API key: ")
+        self.save_to_yaml()
 
     def set_master_db(self, notion_utils):
         if "notion" not in self.data.keys():
