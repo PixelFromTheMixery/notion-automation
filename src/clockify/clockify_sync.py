@@ -44,9 +44,9 @@ class ClockifySync:
                 "put", project_url, data, info="archive project in clockify"
             )
 
-    def setup_tasks(self, clockify_utils, notion_utils, config):
+    def setup_tasks(self, config, clockify_utils, notion_utils):
         workspace_id = config.data["clockify"]["workspace"]
-        prop_name = config.data["notion"]["mover"]["type"]
+        prop_name = config.data["notion"]["reset_prop"]["name"]
         for project in config.data["clockify"]["projects"].keys():
             project_id = config.data["clockify"]["projects"][project]
             notion_tasks, notion_done= notion_utils.get_tasks(
@@ -64,15 +64,19 @@ class ClockifySync:
                 task for task in clockify_tasks 
                 if task not in notion_tasks.keys()
                 and task not in notion_done.keys()
+                and task not in clockify_done.key()
             ]
+            
             to_update_notion = [
                 task for task in clockify_done 
                 if task not in notion_done.keys()
-                ]
+                and task in notion_tasks.keys()
+            ]
 
             to_update_clockify = [
                 task for task in notion_done
                 if task not in clockify_done.keys()
+                and task in clockify_tasks.keys()
             ]
 
             to_create_clockify = [
@@ -80,7 +84,7 @@ class ClockifySync:
                 for task in notion_tasks
                 if task not in clockify_tasks.keys()
                 and task not in notion_done.keys()
-                and task not in to_update_clockify.keys()
+                and task not in to_update_clockify
             ]
 
 
@@ -102,30 +106,14 @@ class ClockifySync:
                 notion_utils.create_page(task_data)
 
             for task in to_update_notion:
-                if config.data["notion"]["mover"]["type"] == "status":
+                if config.data["notion"]["reset_prop"]["type"] == "status":
                     task_data = {"properties": {prop_name: {"status": {"name": "Done"}}}}
                 else:
                     task_data = {"properties": {prop_name: {"checkbox": True}}}
                 try:
                     notion_utils.update_page(task_data, notion_tasks[task], task)
                 except:
-                    task_data = {
-                    "parent": {"database_id": config.data["notion"]["task_db"]},
-                    "properties": {
-                        "Name": {"title": [{"text": {"content": task}}]},
-                        "Status": {"status": {"name": "Done"}},
-                        "Project": {"select": {"name": project}},
-                        "Assignee": {
-                            "people": [{
-                                "object": "user", 
-                                "id": config.data["notion"]["user"] 
-                            }]
-                        }
-                    },
-                }
-                notion_utils.create_page(task_data)
-
-
+                    print(f"Notion task {task} does not exist, add manually if required")
 
             for task in to_create_clockify:
                 data = {"name": task}

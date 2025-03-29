@@ -60,9 +60,14 @@ if __name__ == "__main__":
         
     notion_utils = NotionUtils()
     task_mover = MoveTasks()
-    if args.clockify or "clockify" in args.setup:
+    try:
         clockify_utils = ClockifyUtils()
+    except:
+        pass
+    try:
         clockify_sync = ClockifySync()
+    except:
+        pass
 
     try:
         if args.setup:
@@ -71,7 +76,7 @@ if __name__ == "__main__":
             if "mover" in setup_values:
                 config.setup_mover(notion_utils)
                 notion_utils.match_mt_structure()
-                task_mover.move_tasks(notion_utils)
+                task_mover.move_tasks(config, notion_utils)
             if "clockify" in setup_values:
                 config.setup_clockify(clockify_utils)
                 clockify_sync.project_sync(
@@ -79,7 +84,8 @@ if __name__ == "__main__":
                         config.data["notion"]["task_db"]
                     )
                 )
-                clockify_sync.setup_tasks(clockify_utils,notion_utils, config)
+                clockify_sync.setup_tasks(config, clockify_utils, notion_utils)
+        
         if args.dbmatch:
             notion_utils.match_mt_structure()
 
@@ -89,12 +95,13 @@ if __name__ == "__main__":
                         config.data["notion"]["task_db"]
                     )
             )
-            clockify_sync.setup_tasks(clockify_utils,notion_utils, config)
+            clockify_sync.setup_tasks(config, clockify_utils,notion_utils)
 
         if args.move:
-            task_mover.move_tasks(notion_utils)
+            task_mover.move_tasks(config, notion_utils)
 
         if args.test:
+            config.change_settings(notion_utils, clockify_utils)
             pass
 
         if not any(vars(args).values()):

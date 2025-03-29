@@ -1,9 +1,8 @@
 from utils.api_tools import make_call_with_retry
 from config import Config
-from utils.time import get_current_time
-from datetime import timedelta
-import re
 
+import pytz, re
+from datetime import datetime, timedelta
 
 class MoveTasks:
     def __init__(self):
@@ -38,19 +37,19 @@ class MoveTasks:
 
     def delete_or_reset_tm_task(self, config, task: dict, now_datetime, offset):
         update_url = self.url + f'pages/{task["id"]}'
-        reset_type = config.data["notion"]["mover"]["type"]
+        reset_type = config.data["notion"]["reset_prop"]["type"]
         if task["properties"]["Every"]["select"] is not None:
             new_date = self.new_due_date(task, now_datetime, offset)
             data = {"properties": {"Due Date": {"date": {"start": new_date}}}}
 
             if reset_type=="checkbox":
-                data["properties"][config.data["notion"]["mover"]["name"]] = (
+                data["properties"][config.data["notion"]["reset_prop"]["name"]] = (
                     {"checkbox": "false"},
                 )
 
             else:
-                data["properties"][config.data["notion"]["mover"]["name"]] = {
-                    "status": {"name": config.data["notion"]["mover"]["text"]}
+                data["properties"][config.data["notion"]["reset_prop"]["name"]] = {
+                    "status": {"name": config.data["notion"]["reset_prop"]["text"]}
                 }
                 make_call_with_retry(
                     "patch",
@@ -67,10 +66,11 @@ class MoveTasks:
                 data
             )
 
-    def move_tasks(self, notion_utils):
-        now_datetime, offset = get_current_time()
-        config = Config()
+    def move_tasks(self, config, notion_utils):
+        now_datetime = datetime.now(
+            pytz.timezone(config.data["system"]["timezone"])
+        )
         tasks_to_move = notion_utils.get_tasks(config, "Done")
         for task in tasks_to_move:
-            notion_utils.recreate_task(task, config.data["notion"]["mover"]["history"])
-            self.delete_or_reset_tm_task(config, task, now_datetime, offset)
+            notion_utils.recreate_task(task, config.data["notion"]["history"])
+            self.delete_or_reset_tm_task(config, task, now_datetime, now_datetime.utcoffset())

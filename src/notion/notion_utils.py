@@ -38,7 +38,7 @@ class NotionUtils:
         for prop in source_struct:
             del source_struct[prop]["id"]
 
-        dest_struct = self.get_db_structure(config.data["notion"]["mover"]["history"])
+        dest_struct = self.get_db_structure(config.data["notion"]["history"])
         for prop in dest_struct.keys():
             del dest_struct[prop]["id"]
         
@@ -50,7 +50,7 @@ class NotionUtils:
         # Create a dictionary where each property in dest_struct is a key, with None as its value
         props_to_destroy = {prop: None for prop in to_destroy}
         
-        db_url = self.url + f'databases/{config.data["notion"]["mover"]["history"]}'
+        db_url = self.url + f'databases/{config.data["notion"]["history"]}'
 
         if len(props_to_destroy) != 0:
             data = {"properties": props_to_destroy}
@@ -134,8 +134,8 @@ class NotionUtils:
 
     def get_tasks(self, config, project: str):
         tasks_url = self.url + f'databases/{config.data["notion"]["task_db"]}/query'
-        prop_type = config.data["notion"]["mover"]["type"]
-        prop_name = config.data["notion"]["mover"]["name"]
+        prop_type = config.data["notion"]["reset_prop"]["type"]
+        prop_name = config.data["notion"]["reset_prop"]["name"]
         if project == "Done":
             if prop_type == "status":
                 data = {
@@ -184,7 +184,7 @@ class NotionUtils:
         make_call_with_retry(
             "patch", 
             page_url, 
-            f"updating page {name}", 
+            f"updating notion page {name}", 
             data
         )
 
@@ -193,6 +193,6 @@ class NotionUtils:
         make_call_with_retry(
             "post",
             page_url,
-            f'creating page {data["properties"]["Name"]["title"][0]["text"]["content"]}',
+            f'creating notion page {data["properties"]["Name"]["title"][0]["text"]["content"]}',
             data
         )
