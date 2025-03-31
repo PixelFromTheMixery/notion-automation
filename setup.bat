@@ -20,4 +20,4 @@ call python "%~dp0src\main.py" --s mover,clockify
 echo Script finished
 
 echo Closing
-exit /b
+exit /b to ps1

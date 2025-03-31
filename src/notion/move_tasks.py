@@ -1,18 +1,15 @@
-from utils.api_tools import make_call_with_retry
-from config import Config
-
 import pytz, re
 from datetime import datetime, timedelta
 
 class MoveTasks:
     def __init__(self):
-        self.url = Config().data["system"]["notion_url"]
+        pass
 
-    def new_due_date(self, task: dict, now_datetime, offset):
+    def new_due_date(self, task: dict, now_datetime):
         freq = task["properties"]["Repeats"]["number"]
         scale = task["properties"]["Every"]["select"]["name"]
         datetime_str = task["properties"]["Due Date"]["date"]["start"]
-        new_time = re.search("\d{2}:\d{2}:\d{2}.\d{3}", datetime_str)
+        new_time = re.search(r"\d{2}:\d{2}:\d{2}.\d{3}", datetime_str)
 
         match scale:
             case "Days":
@@ -29,17 +26,16 @@ class MoveTasks:
                 )
         if new_time is not None:
             new_due_value = new_start_datetime.strftime(
-                f"%Y-%m-%dT{new_time}+{offset}"
+                f"%Y-%m-%dT{new_time}+{now_datetime.utcoffset()}"
             )[:-3]
         else:
             new_due_value = new_start_datetime.strftime(f"%Y-%m-%d")
         return new_due_value
 
-    def delete_or_reset_tm_task(self, config, task: dict, now_datetime, offset):
-        update_url = self.url + f'pages/{task["id"]}'
+    def delete_or_reset_tm_task(self, config, notion_utils, task: dict):
         reset_type = config.data["notion"]["reset_prop"]["type"]
         if task["properties"]["Every"]["select"] is not None:
-            new_date = self.new_due_date(task, now_datetime, offset)
+            new_date = self.new_due_date(task, datetime.now())
             data = {"properties": {"Due Date": {"date": {"start": new_date}}}}
 
             if reset_type=="checkbox":
@@ -51,26 +47,21 @@ class MoveTasks:
                 data["properties"][config.data["notion"]["reset_prop"]["name"]] = {
                     "status": {"name": config.data["notion"]["reset_prop"]["text"]}
                 }
-                make_call_with_retry(
-                    "patch",
-                    update_url,
-                    f'reset task {task["properties"]["Name"]["title"][0]["text"]["content"]}',
-                    data
+                notion_utils.update_page(
+                    data,
+                    task["id"],
+                    task["properties"]["Name"]["title"][0]["text"]["content"],
                 )
         else:
             data = {"archived": True}
-            make_call_with_retry(
-                "patch",
-                update_url,
-                f'delete task {task["properties"]["Name"]["title"][0]["text"]["content"]}',
-                data
+            notion_utils.update_page(
+                data,
+                task["id"],
+                task["properties"]["Name"]["title"][0]["text"]["content"],
             )
 
     def move_tasks(self, config, notion_utils):
-        now_datetime = datetime.now(
-            pytz.timezone(config.data["system"]["timezone"])
-        )
         tasks_to_move = notion_utils.get_tasks(config, "Done")
         for task in tasks_to_move:
-            notion_utils.recreate_task(task, config.data["notion"]["history"])
-            self.delete_or_reset_tm_task(config, task, now_datetime, now_datetime.utcoffset())
+            # notion_utils.recreate_task(task, config.data["notion"]["history"])
+            self.delete_or_reset_tm_task(config, notion_utils, task)

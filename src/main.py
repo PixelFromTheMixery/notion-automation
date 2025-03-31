@@ -35,6 +35,10 @@ if __name__ == "__main__":
         )
 
     parser.add_argument(
+        "-opt", "--options", action="store_true", help="Update Settings"
+    )
+
+    parser.add_argument(
         "-t", "--test",
         action="store_true",
         help="Test Ground"
@@ -49,60 +53,66 @@ if __name__ == "__main__":
         print("State loaded")
     except FileNotFoundError:
         if args.setup:
-            setup_values = args.setup.split(",")
-            config.setup(setup_values)
+            config.setup(args.setup.split(","))
         else:
             print("-"*30)
             print("Please run setup.bat first")
             print("-"*30)
             time.sleep(5)
             sys.exit()
-        
-    notion_utils = NotionUtils()
+
+    notion_utils = NotionUtils(config)
     task_mover = MoveTasks()
     try:
-        clockify_utils = ClockifyUtils()
+        clockify_utils = ClockifyUtils(config)
     except:
         pass
     try:
-        clockify_sync = ClockifySync()
+        clockify_sync = ClockifySync(config)
     except:
         pass
 
     try:
         if args.setup:
-            setup_values = args.setup.split(",")
-            config.set_master_db(notion_utils)
-            if "mover" in setup_values:
+            config.select_from_list(notion_utils, "notion_source")
+            if "mover" in args.setup.split(","):
                 config.setup_mover(notion_utils)
-                notion_utils.match_mt_structure()
+                notion_utils.match_db_structure(
+                    config.data["notion"]["task_db"], config.data["notion"]["history"]
+                )
                 task_mover.move_tasks(config, notion_utils)
-            if "clockify" in setup_values:
+            if "clockify" in args.setup.split(","):
                 config.setup_clockify(clockify_utils)
                 clockify_sync.project_sync(
-                    notion_utils.get_project_list(
-                        config.data["notion"]["task_db"]
-                    )
+                    clockify_utils,
+                    notion_utils.get_project_list(config.data["notion"]["task_db"]),
                 )
                 clockify_sync.setup_tasks(config, clockify_utils, notion_utils)
-        
+            print("Setup complete")
+            time.sleep(5)
+
         if args.dbmatch:
-            notion_utils.match_mt_structure()
+            notion_utils.match_db_structure(
+                config.data["notion"]["task_db"], config.data["notion"]["history"]
+            )
 
         if args.clockify:
             clockify_sync.project_sync(
-                notion_utils.get_project_list(
-                        config.data["notion"]["task_db"]
-                    )
+                clockify_utils,
+                notion_utils.get_project_list(config.data["notion"]["task_db"]),
             )
-            clockify_sync.setup_tasks(config, clockify_utils,notion_utils)
+            clockify_sync.task_sync(config, clockify_utils, notion_utils)
+            config.set_sync("clockify")
 
         if args.move:
             task_mover.move_tasks(config, notion_utils)
+            config.set_sync("notion")
+
+        if args.options:
+            config.change_settings(notion_utils, clockify_utils)
 
         if args.test:
-            config.change_settings(notion_utils, clockify_utils)
-            pass
+            print()
 
         if not any(vars(args).values()):
             print("No flags provided. Please provide a flag to run a specific function.")

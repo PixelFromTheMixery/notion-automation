@@ -2,8 +2,9 @@ from utils.api_tools import make_call_with_retry
 from config import Config
 
 class NotionUtils:
-    def __init__(self):
-        self.url = Config().data["system"]["notion_url"]
+
+    def __init__(self, config):
+        self.url = config.data["system"]["locked"]["notion_url"]
 
     def get_users(self):
         user_url = self.url + "users"
@@ -24,24 +25,23 @@ class NotionUtils:
         url = self.url + "databases/"
 
         source_url = url + database_id
-        struct = make_call_with_retry(
-            "get", source_url, info=f'fetch database structure'
-        )["properties"]        
+        struct = make_call_with_retry("get", source_url, f"fetch database structure")[
+            "properties"
+        ]
 
         filtered = {k: v for k, v in struct.items() if struct[k]["type"] != "relation"}
-        
+
         return filtered
 
-    def match_mt_structure(self):
-        config = Config()
-        source_struct = self.get_db_structure(config.data["notion"]["task_db"])
+    def match_db_structure(self, task_db, history):
+        source_struct = self.get_db_structure(task_db)
         for prop in source_struct:
             del source_struct[prop]["id"]
 
-        dest_struct = self.get_db_structure(config.data["notion"]["history"])
+        dest_struct = self.get_db_structure(history)
         for prop in dest_struct.keys():
             del dest_struct[prop]["id"]
-        
+
         to_create = {k: source_struct[k] for k in source_struct if k not in dest_struct}
         to_destroy = {k: dest_struct[k] for k in dest_struct if k not in source_struct}
 
@@ -49,8 +49,8 @@ class NotionUtils:
 
         # Create a dictionary where each property in dest_struct is a key, with None as its value
         props_to_destroy = {prop: None for prop in to_destroy}
-        
-        db_url = self.url + f'databases/{config.data["notion"]["history"]}'
+
+        db_url = self.url + f"databases/{history}"
 
         if len(props_to_destroy) != 0:
             data = {"properties": props_to_destroy}
@@ -132,52 +132,78 @@ class NotionUtils:
             data
         )
 
-    def get_tasks(self, config, project: str):
+    def task_data_filter(self, query: str, arg_one: str = None, arg_two: str = None):
+        data = {}
+        if query == "Done":
+            if arg_one == "status":
+                data = {"filter": {"property": arg_two, "status": {"equals": "Done"}}}
+            else:
+                data = {"filter": {"property": arg_two, "checkbox": True}}
+        elif query == "Time":
+            data = {
+                "filter": {
+                    "timestamp": "last_edited_time",
+                    "last_edited_time": {"on_or_after": arg_one},
+                }
+            }
+        elif query == "Name":
+            data = {"filter": {"property": "Name", "rich_text": {"equals": arg_one}}}
+        return data
+
+    def get_tasks(
+        self, config, project: str, double_list: bool = False, history: bool = False
+    ):
         tasks_url = self.url + f'databases/{config.data["notion"]["task_db"]}/query'
+        if history:
+            tasks_url = self.url + f'databases/{config.data["notion"]["history"]}/query'
         prop_type = config.data["notion"]["reset_prop"]["type"]
         prop_name = config.data["notion"]["reset_prop"]["name"]
         if project == "Done":
-            if prop_type == "status":
-                data = {
-                    "filter": {
-                        "property": prop_name, 
-                        "status": {
-                            "equals": "Done"
-                            }
-                        }
-                    }
-            else:
-                data = {
-                    "filter": {
-                        "property": prop_name,
-                        "checkbox": True
-                        }
-                    }
+            data = self.task_data_filter("Done", prop_type, prop_name)
             url_info = "get all completed tasks"
+        elif project == "Time":
+            data = self.task_data_filter(
+                "Time", config.data["system"]["locked"]["notion_sync"]
+            )
+            url_info = "get all completed tasks"
+        elif project not in config.data["clockify"]["projects"].keys():
+            data = self.task_data_filter("Name", project)
+            url_info = f"check for task {project}"
         else:
             data = {"filter": {"property": "Project", "select": {"equals": project}}}
             url_info = f"get all tasks in notion project: {project}"
-        
         tasks = make_call_with_retry(
             "post", 
             tasks_url, 
             url_info,
             data
         )
-        if project == "Done": return tasks
+        if double_list:
+            if prop_type == "status":
+                task_list = [
+                    task
+                    for task in tasks
+                    if task["properties"][prop_name]["status"]["name"] != "Done"
+                ]
+                done_list = [
+                    task
+                    for task in tasks
+                    if task["properties"][prop_name]["status"]["name"] == "Done"
+                ]
+            if prop_type == "checkbox":
+                task_list = [
+                    task
+                    for task in tasks
+                    if task["properties"][prop_name]["checkbox"] == False
+                ]
+                done_list = [
+                    task
+                    for task in tasks
+                    if task["properties"][prop_name]["checkbox"] == True
+                ]
+            return task_list, done_list
         else:
-            task_dict = {}
-            done_task = {}
-            for task in tasks:
-                if prop_type == "status" and task["properties"][prop_name]["status"]["name"] != "Done":
-                    task_dict[task["properties"]["Name"]["title"][0]["text"]["content"]] = task["id"]
-                elif prop_type == "status" and task["properties"][prop_name]["status"]["name"] == "Done":
-                    done_task[task["properties"]["Name"]["title"][0]["text"]["content"]] = task["id"]
-                elif prop_type == "checkbox" and task["properties"][prop_name]["checkbox"] == False:
-                    task_dict[task["properties"]["Name"]["title"][0]["text"]["content"]] = task["id"]
-                elif prop_type == "checkbox" and task["properties"][prop_name]["checkbox"] == True:
-                    done_task[task["properties"]["Name"]["title"][0]["text"]["content"]] = task["id"]
-            return task_dict, done_task
+            return tasks
 
     def update_page(self, data: dict, page_id: str, name: str):
         page_url = self.url + f"pages/{page_id}"
@@ -196,3 +222,14 @@ class NotionUtils:
             f'creating notion page {data["properties"]["Name"]["title"][0]["text"]["content"]}',
             data
         )
+
+    def check_for_page(self, config, name):
+        page_url = self.url + f'databases/{config.data["notion"]["task_db"]}/query'
+        data = self.task_data_filter("Name", name)
+        page = make_call_with_retry(
+            "post",
+            page_url,
+            f"looking for notion page {name} in source database",
+            data,
+        )
+        return page
