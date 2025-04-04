@@ -1,9 +1,13 @@
-import pytz, re
+from config import Config
+from notion.notion_utils import NotionUtils
+
+import re
 from datetime import datetime, timedelta
 
 class MoveTasks:
     def __init__(self):
-        pass
+        self.config = Config()
+        self.notion_utils = NotionUtils()
 
     def new_due_date(self, task: dict, now_datetime):
         freq = task["properties"]["Repeats"]["number"]
@@ -32,36 +36,35 @@ class MoveTasks:
             new_due_value = new_start_datetime.strftime(f"%Y-%m-%d")
         return new_due_value
 
-    def delete_or_reset_tm_task(self, config, notion_utils, task: dict):
-        reset_type = config.data["notion"]["reset_prop"]["type"]
+    def delete_or_reset_tm_task(self, task: dict):
         if task["properties"]["Every"]["select"] is not None:
             new_date = self.new_due_date(task, datetime.now())
             data = {"properties": {"Due Date": {"date": {"start": new_date}}}}
 
-            if reset_type=="checkbox":
-                data["properties"][config.data["notion"]["reset_prop"]["name"]] = (
+            if self.notion_utils.reset_prop_type == "checkbox":
+                data["properties"][self.notion_utils.reset_prop_name] = (
                     {"checkbox": "false"},
                 )
 
             else:
-                data["properties"][config.data["notion"]["reset_prop"]["name"]] = {
-                    "status": {"name": config.data["notion"]["reset_prop"]["text"]}
+                data["properties"][self.notion_utils.reset_prop_name] = {
+                    "status": {"name": self.config.data["notion"]["reset_prop"]["text"]}
                 }
-                notion_utils.update_page(
+                self.notion_utils.update_page(
                     data,
                     task["id"],
                     task["properties"]["Name"]["title"][0]["text"]["content"],
                 )
         else:
             data = {"archived": True}
-            notion_utils.update_page(
+            self.notion_utils.update_page(
                 data,
                 task["id"],
                 task["properties"]["Name"]["title"][0]["text"]["content"],
             )
 
-    def move_tasks(self, config, notion_utils):
-        tasks_to_move = notion_utils.get_tasks(config, "Done")
+    def move_tasks(self):
+        tasks_to_move = self.notion_utils.get_tasks("Done")
         for task in tasks_to_move:
-            # notion_utils.recreate_task(task, config.data["notion"]["history"])
-            self.delete_or_reset_tm_task(config, notion_utils, task)
+            self.notion_utils.recreate_task(task, self.config.data["notion"]["history"])
+            self.delete_or_reset_tm_task(task)

@@ -18,6 +18,12 @@ class Config:
         if not Config.initialized:
             Config.initialized = True
 
+    def set_utils(self, util_type: str, utils):
+        if util_type == "notion":
+            self.notion_utils = utils
+        if util_type == "clockify":
+            self.clockify_utils = utils
+
     def set_key(self, service:str):
         if service == "notion":
             self.data["system"]["notion_key"] = input("Paste your Notion API key: ")
@@ -44,19 +50,19 @@ class Config:
             )
         self.save_to_yaml(f"{service.capitalize()} sync saved")
 
-    def select_from_list(self, utils, list_name):
+    def select_from_list(self, list_name):
         message = ""
         if list_name == "notion_user":
             self.data["notion"]["user"] = list_options(
-                utils.get_users(),
+                self.notion_utils.get_users(),
                 "Enter the number of the user: ",
-                "Please select your name:"
+                "Please select your name:",
             )["id"]
             message = "Notion user saved"
 
         elif list_name == "notion_source":
             self.data["notion"]["task_db"] = list_options(
-                utils.get_databases(),
+                self.notion_utils.get_databases(),
                 "Enter the number of the database: ",
                 "Please select the database you want completed tasks to be moved from/synced to:",
                 "notion",
@@ -65,16 +71,16 @@ class Config:
 
         elif list_name == "notion_history":
             self.data["notion"]["history"] = list_options(
-                utils.get_databases(),
+                self.notion_utils.get_databases(),
                 "Enter the number of the database: ",
                 "Please select the database you want completed tasks to be moved to:",
-                "notion"
+                "notion",
             )["id"]
             message = "Notion history database saved"
 
         elif list_name == "clockify_workspace":
             self.data["clockify"]["workspace"] = list_options(
-                utils.get_workspaces(),
+                [self.clockify_utils.get_workspaces()],
                 "Enter the number of the workspace: ",
                 "Please select the workspace you'd like to sync with: ",
             )["id"]
@@ -82,9 +88,9 @@ class Config:
 
         elif list_name == "clockify_user":
             self.data["clockify"]["user"] = list_options(
-                utils.get_users(self.data["clockify"]["workspace"]),
+                self.clockify_utils.get_users(),
                 "Enter the number of the user: ",
-                "Please select your name:"
+                "Please select your name:",
             )["id"]
             message = "Clockify user saved"
 
@@ -106,8 +112,8 @@ class Config:
             self.set_sync("clockify")
         self.save_to_yaml("Boilerplate complete")
 
-    def notion_reset_prop(self, notion_utils):
-        properties = notion_utils.get_db_structure(self.data["notion"]["task_db"])
+    def notion_reset_prop(self):
+        properties = self.notion_utils.get_db_structure(self.data["notion"]["task_db"])
         prop_list = [properties[prop] for prop in properties if properties[prop]["type"] in ["status","checkbox"]]
         status_prop = properties[list_options(
             prop_list,
@@ -129,29 +135,47 @@ class Config:
         }
         self.save_to_yaml("Notion reset property set")
 
-    def setup_mover(self, notion_utils):
-        self.select_from_list(notion_utils, "notion_user")
-        self.select_from_list(notion_utils, "notion_history")
-        self.notion_reset_prop(notion_utils)
+    def setup_mover(self):
+        self.select_from_list("notion_user")
+        self.select_from_list("notion_history")
+        self.notion_reset_prop()
 
-    def clockify_projects(self, clockify_utils):
-        projects = clockify_utils.get_projects(self.data["clockify"]["workspace"])
-        self.data["clockify"]["projects"] = {
-            project["name"]: project["id"]
-            for project in projects
-            if not project["archived"]
-        }
+    def clockify_clients(self):
+        if "clients" not in self.data["clockify"].keys():
+            self.data["clockify"]["clients"] = {}
+        clients = self.clockify_utils.get_clients()
+        for client in clients:
+            self.data["clockify"]["clients"][client["id"]] = client["name"]
+
+        self.save_to_yaml("Clockify clients saved")
+
+    def clockify_projects(self):
+        if "name" or "id" not in self.data["clockify"]["projects"].keys():
+            self.data["clockify"]["projects"] = {"name": {}, "id": {}}
+        projects = self.clockify_utils.get_projects()
+        for project in projects:
+            if not project["archived"]:
+                self.data["clockify"]["projects"]["name"][project["name"]] = {
+                    "id": project["id"],
+                    "client": self.data["clockify"]["clients"][project["clientId"]],
+                }
+                self.data["clockify"]["projects"]["id"][project["id"]] = {
+                    "name": project["name"],
+                    "client": self.data["clockify"]["clients"][project["clientId"]],
+                }
+
         self.save_to_yaml("Clockify projects setup")
 
-    def setup_clockify(self, clockify_utils):
+    def setup_clockify(self):
         if "clockify" not in self.data.keys():
             self.data["clockify"] = {}
 
-        self.select_from_list(clockify_utils, "clockify_workspace")    
-        self.select_from_list(clockify_utils, "clockify_user")
-        self.clockify_projects(clockify_utils)        
+        self.select_from_list("clockify_workspace")
+        self.select_from_list("clockify_user")
+        self.clockify_clients()
+        self.clockify_projects()
 
-    def change_settings (self, notion_utils = None, clockify_utils = None):
+    def change_settings(self):
         settings = True
         settings_list = [{"name": key} for key in self.data.keys()]
         settings_list.append({"name":"quit"})
@@ -172,13 +196,13 @@ class Config:
                 )["name"]
 
                 if clockify_setting == "projects":
-                    self.clockify_projects(clockify_utils)
+                    self.clockify_projects()
 
                 elif clockify_setting == "user":
-                    self.select_from_list(clockify_utils, "clockify_user")
+                    self.select_from_list("clockify_user")
 
                 elif clockify_setting == "workspace":
-                    self.select_from_list(clockify_utils, "clockify_workspace")
+                    self.select_from_list("clockify_workspace")
 
                 elif clockify_setting == "go back":
                     break
@@ -192,10 +216,10 @@ class Config:
                     "Please select the type of setting you'd like to change:",
                 )["name"]
                 if notion_setting == "history":
-                    self.select_from_list(notion_utils, "notion_history")
+                    self.select_from_list("notion_history")
 
                 elif notion_setting == "reset_prop":
-                    self.notion_reset_prop(notion_utils)
+                    self.notion_reset_prop()
 
                 elif notion_setting == "go back":
                     break

@@ -11,31 +11,36 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Notion Automation Python Script with CLI flags")
 
     parser.add_argument(
-        "-s", "--setup",
-        type=str,
-        help="Set up the Notion and Clockify API keys"
+        "-setup", "--setup", type=str, help="Set up the Notion and Clockify API keys"
     )
 
     parser.add_argument(
-        "-dbm", "--dbmatch",
+        "-dbm",
+        "--dbMatch",
         action="store_true",
-        help="Ensure notion database synchronicity"
-        )
+        help="Ensure notion database synchronicity",
+    )
 
     parser.add_argument(
-        "-m", "--move",
+        "-move",
+        "--moveTasks",
         action="store_true",
-        help="Move tasks from one database to another"
-        )
+        help="Move tasks from one database to another",
+    )
 
     parser.add_argument(
-        "-c", "--clockify",
-        action="store_true",
-        help="Clockify Integration"
-        )
+        "-clockify", "--clockify", action="store_true", help="Clockify Integration"
+    )
 
     parser.add_argument(
-        "-opt", "--options", action="store_true", help="Update Settings"
+        "-tei",
+        "--timeEntryImport",
+        action="store_true",
+        help="Import time entries into a notion database",
+    )
+
+    parser.add_argument(
+        "-settings", "--settings", action="store_true", help="Update Settings"
     )
 
     parser.add_argument(
@@ -61,66 +66,70 @@ if __name__ == "__main__":
             time.sleep(5)
             sys.exit()
 
-    notion_utils = NotionUtils(config)
-    task_mover = MoveTasks()
     try:
-        clockify_utils = ClockifyUtils(config)
-    except:
-        pass
-    try:
-        clockify_sync = ClockifySync(config)
-    except:
-        pass
-
-    try:
+        notion_utils = NotionUtils()
+        config.set_utils("notion", notion_utils)
+        task_mover = MoveTasks()
+        if args.clockify:
+            clockify_utils = ClockifyUtils()
+            config.set_utils("clockify", clockify_utils)
+            clockify_sync = ClockifySync()
         if args.setup:
-            config.select_from_list(notion_utils, "notion_source")
+            config.select_from_list("notion_source")
             if "mover" in args.setup.split(","):
-                config.setup_mover(notion_utils)
+                config.setup_mover()
                 notion_utils.match_db_structure(
                     config.data["notion"]["task_db"], config.data["notion"]["history"]
                 )
-                task_mover.move_tasks(config, notion_utils)
+                task_mover.move_tasks()
             if "clockify" in args.setup.split(","):
-                config.setup_clockify(clockify_utils)
+                clockify_utils = ClockifyUtils()
+                config.set_utils("clockify", clockify_utils)
+                clockify_sync = ClockifySync()
+                config.setup_clockify()
                 clockify_sync.project_sync(
-                    clockify_utils,
                     notion_utils.get_project_list(config.data["notion"]["task_db"]),
                 )
-                clockify_sync.setup_tasks(config, clockify_utils, notion_utils)
+                clockify_sync.setup_tasks()
             print("Setup complete")
             time.sleep(5)
 
-        if args.dbmatch:
+        if args.dbMatch:
             notion_utils.match_db_structure(
                 config.data["notion"]["task_db"], config.data["notion"]["history"]
             )
 
+        if args.timeEntryImport and not args.clockify:
+            print("Please set up clockify to use this featrure")
+            time.sleep(5)
+
+        if args.timeEntryImport and args.clockify:
+            pass
+
         if args.clockify:
             clockify_sync.project_sync(
-                clockify_utils,
                 notion_utils.get_project_list(config.data["notion"]["task_db"]),
             )
-            clockify_sync.task_sync(config, clockify_utils, notion_utils)
+            clockify_sync.task_sync()
             config.set_sync("clockify")
+            print("Clockify synced", file=sys.stderr)
+            time.sleep(5)
 
-        if args.move:
-            task_mover.move_tasks(config, notion_utils)
+        if args.moveTasks:
+            task_mover.move_tasks()
             config.set_sync("notion")
+            print("Notion synced", file=sys.stderr)
 
-        if args.options:
-            config.change_settings(notion_utils, clockify_utils)
+        if args.settings:
+            config.change_settings()
 
         if args.test:
+            clockify_sync.import_time_entries()
             print()
 
         if not any(vars(args).values()):
             print("No flags provided. Please provide a flag to run a specific function.")
             parser.print_help()
-
-    except FileNotFoundError as e:
-        print(f"Settings file not found. Please rerun with '-s' or '--setup' flag: {str(e)}", file=sys.stderr)
-        sys.exit(1)
 
     except Exception as e:
         print(f"An error occurred: {str(e)}", file=sys.stderr)

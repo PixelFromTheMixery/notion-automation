@@ -3,8 +3,11 @@ from config import Config
 
 class NotionUtils:
 
-    def __init__(self, config):
-        self.url = config.data["system"]["locked"]["notion_url"]
+    def __init__(self):
+        self.config = Config()
+        self.reset_prop_type = self.config.data["notion"]["reset_prop"]["type"]
+        self.reset_prop_name = self.config.data["notion"]["reset_prop"]["name"]
+        self.url = self.config.data["system"]["locked"]["notion_url"]
 
     def get_users(self):
         user_url = self.url + "users"
@@ -33,8 +36,8 @@ class NotionUtils:
 
         return filtered
 
-    def match_db_structure(self, task_db, history):
-        source_struct = self.get_db_structure(task_db)
+    def match_db_structure(self, source, history):
+        source_struct = self.get_db_structure(source)
         for prop in source_struct:
             del source_struct[prop]["id"]
 
@@ -150,23 +153,25 @@ class NotionUtils:
             data = {"filter": {"property": "Name", "rich_text": {"equals": arg_one}}}
         return data
 
-    def get_tasks(
-        self, config, project: str, double_list: bool = False, history: bool = False
-    ):
-        tasks_url = self.url + f'databases/{config.data["notion"]["task_db"]}/query'
+    def get_tasks(self, project: str, double_list: bool = False, history: bool = False):
+        tasks_url = (
+            self.url + f'databases/{self.config.data["notion"]["task_db"]}/query'
+        )
         if history:
-            tasks_url = self.url + f'databases/{config.data["notion"]["history"]}/query'
-        prop_type = config.data["notion"]["reset_prop"]["type"]
-        prop_name = config.data["notion"]["reset_prop"]["name"]
+            tasks_url = (
+                self.url + f'databases/{self.config.data["notion"]["history"]}/query'
+            )
         if project == "Done":
-            data = self.task_data_filter("Done", prop_type, prop_name)
+            data = self.task_data_filter(
+                "Done", self.reset_prop_type, self.reset_prop_name
+            )
             url_info = "get all completed tasks"
         elif project == "Time":
             data = self.task_data_filter(
-                "Time", config.data["system"]["locked"]["notion_sync"]
+                "Time", self.config.data["system"]["locked"]["notion_sync"]
             )
             url_info = "get all completed tasks"
-        elif project not in config.data["clockify"]["projects"].keys():
+        elif project not in self.config.data["clockify"]["projects"]["name"].keys():
             data = self.task_data_filter("Name", project)
             url_info = f"check for task {project}"
         else:
@@ -179,27 +184,29 @@ class NotionUtils:
             data
         )
         if double_list:
-            if prop_type == "status":
+            if self.reset_prop_type == "status":
                 task_list = [
                     task
                     for task in tasks
-                    if task["properties"][prop_name]["status"]["name"] != "Done"
+                    if task["properties"][self.reset_prop_name]["status"]["name"]
+                    != "Done"
                 ]
                 done_list = [
                     task
                     for task in tasks
-                    if task["properties"][prop_name]["status"]["name"] == "Done"
+                    if task["properties"][self.reset_prop_name]["status"]["name"]
+                    == "Done"
                 ]
-            if prop_type == "checkbox":
+            if self.reset_prop_type == "checkbox":
                 task_list = [
                     task
                     for task in tasks
-                    if task["properties"][prop_name]["checkbox"] == False
+                    if task["properties"][self.reset_prop_name]["checkbox"] == False
                 ]
                 done_list = [
                     task
                     for task in tasks
-                    if task["properties"][prop_name]["checkbox"] == True
+                    if task["properties"][self.reset_prop_name]["checkbox"] == True
                 ]
             return task_list, done_list
         else:
@@ -223,8 +230,8 @@ class NotionUtils:
             data
         )
 
-    def check_for_page(self, config, name):
-        page_url = self.url + f'databases/{config.data["notion"]["task_db"]}/query'
+    def check_for_page(self, name):
+        page_url = self.url + f'databases/{self.config.data["notion"]["task_db"]}/query'
         data = self.task_data_filter("Name", name)
         page = make_call_with_retry(
             "post",
