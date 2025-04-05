@@ -201,13 +201,13 @@ class ClockifySync:
 
             if task_obj == [] and done_obj == []:
                 self.clockify_utils.create_task(
-                    self.config.data["clockify"]["projects"][project],
+                    self.config.data["clockify"]["projects"]["name"][project]["id"],
                     task["properties"]["Name"]["title"][0]["text"]["content"],
                 )
         for task in notion_done:
             project = task["properties"]["Project"]["select"]["name"]
             task_obj, done_obj = self.clockify_utils.get_tasks_by_project(
-                self.config.data["clockify"]["projects"][project],
+                self.config.data["clockify"]["projects"]["name"][project]["id"],
                 project,
                 task["properties"]["Name"]["title"][0]["text"]["content"],
             )
