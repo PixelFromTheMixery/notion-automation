@@ -5,8 +5,13 @@ class NotionUtils:
 
     def __init__(self):
         self.config = Config()
-        self.reset_prop_type = self.config.data["notion"]["reset_prop"]["type"]
-        self.reset_prop_name = self.config.data["notion"]["reset_prop"]["name"]
+        if "log" in self.config.data["notion"].keys():
+            self.reset_prop_type = self.config.data["notion"]["log"]["reset_prop"][
+                "type"
+            ]
+            self.reset_prop_name = self.config.data["notion"]["log"]["reset_prop"][
+                "name"
+            ]
         self.url = self.config.data["system"]["locked"]["notion_url"]
 
     def get_users(self):
@@ -36,24 +41,31 @@ class NotionUtils:
 
         return filtered
 
-    def match_db_structure(self, source, history):
-        source_struct = self.get_db_structure(source)
+    def match_db_structure(self, target):
+        source_struct = self.get_db_structure(self.config.data["notion"]["task_db"])
         for prop in source_struct:
             del source_struct[prop]["id"]
 
-        dest_struct = self.get_db_structure(history)
+        dest_struct = self.get_db_structure(target)
         for prop in dest_struct.keys():
             del dest_struct[prop]["id"]
 
-        to_create = {k: source_struct[k] for k in source_struct if k not in dest_struct}
-        to_destroy = {k: dest_struct[k] for k in dest_struct if k not in source_struct}
+        to_create = {
+            k: source_struct[k]
+            for k in source_struct
+            if k not in dest_struct
+            and k in self.config.data["notion"]["log"]["sync_props"]
+        }
+        to_destroy = {
+            k: dest_struct[k]
+            for k in dest_struct
+            if k not in source_struct
+            and k in self.config.data["notion"]["log"]["sync_props"]
+        }
 
-        props_to_destroy = {}
-
-        # Create a dictionary where each property in dest_struct is a key, with None as its value
         props_to_destroy = {prop: None for prop in to_destroy}
 
-        db_url = self.url + f"databases/{history}"
+        db_url = self.url + f"databases/{target}"
 
         if len(props_to_destroy) != 0:
             data = {"properties": props_to_destroy}
@@ -143,7 +155,7 @@ class NotionUtils:
         new_page = {
             prop: page["props"][prop]
             for prop in page["props"]
-            if prop in self.config["notion"]["sync_props"]
+            if prop in self.config.data["notion"]["log"]["sync_props"]
         }
         data = {
             "parent": {"database_id": parent},
@@ -184,7 +196,8 @@ class NotionUtils:
         )
         if history:
             tasks_url = (
-                self.url + f'databases/{self.config.data["notion"]["history"]}/query'
+                self.url
+                + f'databases/{self.config.data["notion"]["log"]["history"]}/query'
             )
         if project == "Done":
             data = self.task_data_filter(

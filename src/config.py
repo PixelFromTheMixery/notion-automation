@@ -70,7 +70,7 @@ class Config:
             message = "Notion source database saved"
 
         elif list_name == "notion_history":
-            self.data["notion"]["history"] = list_options(
+            self.data["notion"]["log"]["history"] = list_options(
                 self.notion_utils.get_databases(),
                 "Enter the number of the database: ",
                 "Please select the database you want completed tasks to be moved to:",
@@ -101,7 +101,7 @@ class Config:
         if list_name == "notion_prop_sync":
             props = self.notion_utils.get_db_structure(self.data["notion"]["task_db"])
             prop_list = [prop for prop in props if prop]
-            self.data["notion"]["sync_props"] = multi_options(
+            self.data["notion"]["log"]["sync_props"] = multi_options(
                 prop_list,
                 "List the properties: ",
                 "Select which properties you'd like to sync: ",
@@ -141,30 +141,32 @@ class Config:
                 "Enter the number of the option: ",
                 "Please select the reset option you would like for repeating tasks",
             )["name"]
-        self.data["notion"]["reset_prop"] = {
+        self.data["notion"]["log"]["reset_prop"] = {
             "name": status_prop["name"],
             "type": status_prop["type"],
-            "text": reset_text
+            "text": reset_text,
         }
         self.save_to_yaml("Notion reset property set")
 
     def notion_logging(self):
         log = input("Would you like to log completed tasks (y/n)? ")
         if log == "y":
-            self.data["notion"]["log"] = True
+            self.data["notion"]["log"] = {}
+            self.data["notion"]["log"]["active"] = True
+            self.select_from_list("notion_history")
+            self.multiselect_from_list("notion_prop_sync")
+            self.notion_utils.match_db_structure()
+            self.notion_reset_prop()
         else:
-            self.data["notion"]["log"] = False
+            self.data["notion"]["log"]["active"] = False
 
-        self.save_to_yaml(f"Notion logging set to {self.data["notion"]["log"]}")
+        self.save_to_yaml(
+            f"Notion logging set to {self.data["notion"]["log"]["active"]}"
+        )
 
     def setup_notion(self):
         self.select_from_list("notion_user")
         self.notion_logging()
-
-        if self.data["notion"]["log"]:
-            self.select_from_list("notion_history")
-            self.multiselect_from_list("notion_prop_sync")
-            self.notion_reset_prop()
 
     def clockify_clients(self):
         if "clients" not in self.data["clockify"].keys():
@@ -233,7 +235,7 @@ class Config:
                     self.select_from_list("clockify_workspace")
 
                 elif clockify_setting == "go back":
-                    break
+                    pass
 
             elif setting_type =="notion":
                 notion_list = [key for key in self.data["notion"].keys()]
@@ -244,22 +246,17 @@ class Config:
                     "Please select the type of setting you'd like to change:",
                     "basic",
                 )
-                if notion_setting == "sync_props":
-                    self.multiselect_from_list("notion_prop_sync")
-                elif notion_setting == "log":
+                if notion_setting == "log":
                     self.notion_logging()
-                    if self.data["notion"]["log"]:
-                        self.select_from_list("notion_history")
-                        self.multiselect_from_list("notion_prop_sync")
-                        self.notion_reset_prop()
-                elif notion_setting == "history":
-                    self.select_from_list("notion_history")
 
-                elif notion_setting == "reset_prop":
-                    self.notion_reset_prop()
+                elif notion_setting == "task_db":
+                    self.select_from_list("notion_source")
+
+                elif notion_setting == "user":
+                    self.select_from_list("notion_user")
 
                 elif notion_setting == "go back":
-                    break
+                    pass
 
             elif setting_type == "system":
                 system_list = [key for key in self.data["system"].keys()]
@@ -280,7 +277,7 @@ class Config:
                 elif system_setting == "timezone":
                     self.set_timezone()
                 elif system_setting == "go back":
-                    break
+                    pass
 
             elif setting_type == "quit":
                 break

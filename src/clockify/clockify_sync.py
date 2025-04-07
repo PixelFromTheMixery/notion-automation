@@ -51,8 +51,8 @@ class ClockifySync:
         self.config.clockify_projects()
 
     def setup_tasks(self):
-        prop_type = self.config.data["notion"]["reset_prop"]["type"]
-        prop_name = self.config.data["notion"]["reset_prop"]["name"]
+        prop_type = self.config.data["notion"]["log"]["reset_prop"]["type"]
+        prop_name = self.config.data["notion"]["log"]["reset_prop"]["name"]
         for project in self.config.data["clockify"]["projects"]["name"].keys():
             project_id = self.config.data["clockify"]["projects"]["name"][project]["id"]
             notion_tasks, notion_done = self.notion_utils.get_tasks(project, True)

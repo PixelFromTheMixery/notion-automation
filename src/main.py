@@ -80,8 +80,7 @@ if __name__ == "__main__":
                 config.setup_notion()
                 if config.data["notion"]["log"]:
                     notion_utils.match_db_structure(
-                        config.data["notion"]["task_db"],
-                        config.data["notion"]["history"],
+                        config.data["notion"]["log"]["history"]
                     )
                 task_reset.automate_tasks()
             if "clockify" in args.setup.split(","):
@@ -97,9 +96,7 @@ if __name__ == "__main__":
             time.sleep(5)
 
         if args.dbMatch:
-            notion_utils.match_db_structure(
-                config.data["notion"]["task_db"], config.data["notion"]["history"]
-            )
+            notion_utils.match_db_structure(config.data["notion"]["log"]["history"])
 
         if args.timeEntryImport and not args.clockify:
             print("Please set up clockify to use this featrure")

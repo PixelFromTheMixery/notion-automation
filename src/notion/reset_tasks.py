@@ -48,7 +48,9 @@ class ResetTasks:
 
             else:
                 data["properties"][self.notion_utils.reset_prop_name] = {
-                    "status": {"name": self.config.data["notion"]["reset_prop"]["text"]}
+                    "status": {
+                        "name": self.config.data["notion"]["log"]["reset_prop"]["text"]
+                    }
                 }
                 self.notion_utils.update_page(
                     data,
@@ -65,10 +67,12 @@ class ResetTasks:
 
     def automate_tasks(self):
         tasks_to_update = self.notion_utils.get_tasks("Done")
-        
-        if self.config.data["notion"]["log"]:
+
+        if self.config.data["notion"]["log"]["active"]:
             for task in tasks_to_update:
-                self.notion_utils.recreate_task(task, self.config.data["notion"]["history"])
+                self.notion_utils.recreate_task(
+                    task, self.config.data["notion"]["log"]["history"]
+                )
                 self.delete_or_reset_task(task)
         else:
             for task in tasks_to_update:

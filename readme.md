@@ -62,6 +62,8 @@ Common Problems:
 
 **Logs are kept in the base folder under Logs/<year>/<month>/<day>.txt. Most problems can be determined from this.**
 
+Some problems can be fixed by running setup.bat again or the argument with 
+
 Properties between databases must match where specified, e.g. if you have a Progess property that is a Checkbox, it must be a checkbox, not a status.
 ```
 python3 main.py -help
