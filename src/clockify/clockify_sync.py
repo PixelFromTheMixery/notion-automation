@@ -111,7 +111,9 @@ class ClockifySync:
         clockify_tasks, clockify_done = self.clockify_utils.get_tasks_from_entries()
         notion_tasks, notion_done = self.notion_utils.get_tasks("Time", True)
 
-        notion_done = [task for task in notion_done if task["properties"]["Every"]["select"] == None]
+        notion_done = [
+            task for task in notion_done if task["properties"]["Rate"]["select"] == None
+        ]
 
         for task in clockify_tasks:
             page = self.notion_utils.check_for_page(task["task"]["name"])

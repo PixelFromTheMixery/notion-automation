@@ -17,12 +17,12 @@
 			"args": ["-dbm"]
 		},
 		{
-			"name": "Move tasks",
+			"name": "Auotmate Notion",
 			"type": "python",
 			"request": "launch",
 			"program": "${workspaceFolder}/src/main.py",
 			"console": "integratedTerminal",
-			"args": ["-move"]
+			"args": ["-notion"]
 		},
 		{
 			"name": "Clockify",
@@ -38,7 +38,15 @@
 			"request": "launch",
 			"program": "${workspaceFolder}/src/main.py",
 			"console": "integratedTerminal",
-			"args": ["-setup", "clockify,mover"]
+			"args": ["-setup", "notion"]
+		}
+		{
+			"name": "Settings",
+			"type": "python",
+			"request": "launch",
+			"program": "${workspaceFolder}/src/main.py",
+			"console": "integratedTerminal",
+			"args": ["-settings"]
 		}
 		{
 			"name": "Sync and Move",
@@ -46,7 +54,7 @@
 			"request": "launch",
 			"program": "${workspaceFolder}/src/main.py",
 			"console": "integratedTerminal",
-			"args": ["--move", "--clockify"],
+			"args": ["--notion", "--clockify"],
 		}
 		{
 			"name": "Testing",

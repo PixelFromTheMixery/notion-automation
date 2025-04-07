@@ -1,6 +1,6 @@
 from clockify.clockify_sync import ClockifySync
 from clockify.clockify_utils import ClockifyUtils
-from notion.move_tasks import MoveTasks
+from notion.reset_tasks import ResetTasks
 from notion.notion_utils import NotionUtils
 from config import Config
 
@@ -22,10 +22,10 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-move",
-        "--moveTasks",
+        "-notion",
+        "--notion",
         action="store_true",
-        help="Move tasks from one database to another",
+        help="Automate Notion Tasks",
     )
 
     parser.add_argument(
@@ -69,19 +69,21 @@ if __name__ == "__main__":
     try:
         notion_utils = NotionUtils()
         config.set_utils("notion", notion_utils)
-        task_mover = MoveTasks()
+        task_reset = ResetTasks()
         if args.clockify:
             clockify_utils = ClockifyUtils()
             config.set_utils("clockify", clockify_utils)
             clockify_sync = ClockifySync()
         if args.setup:
             config.select_from_list("notion_source")
-            if "mover" in args.setup.split(","):
-                config.setup_mover()
-                notion_utils.match_db_structure(
-                    config.data["notion"]["task_db"], config.data["notion"]["history"]
-                )
-                task_mover.move_tasks()
+            if "notion" in args.setup.split(","):
+                config.setup_notion()
+                if config.data["notion"]["log"]:
+                    notion_utils.match_db_structure(
+                        config.data["notion"]["task_db"],
+                        config.data["notion"]["history"],
+                    )
+                task_reset.automate_tasks()
             if "clockify" in args.setup.split(","):
                 clockify_utils = ClockifyUtils()
                 config.set_utils("clockify", clockify_utils)
@@ -115,8 +117,8 @@ if __name__ == "__main__":
             print("Clockify synced", file=sys.stderr)
             time.sleep(5)
 
-        if args.moveTasks:
-            task_mover.move_tasks()
+        if args.notion:
+            task_reset.automate_tasks()
             config.set_sync("notion")
             print("Notion synced", file=sys.stderr)
 

@@ -84,50 +84,75 @@ class NotionUtils:
         )["Project"]["select"]["options"]
         return [project["name"] for project in notion_projects]
 
+    def get_page_contents(self, page_id):
+        children_url = self.url + f"blocks/{page_id}/children"
+        children = make_call_with_retry("get", children_url, f"fetch page contents")
+        return children
+
     def unpack_db_page(self, task: dict):
-        unpacked_data = {}
+        unpacked_props = {}
+
         for prop in task["properties"]:
             prop_dict = task["properties"][prop]
             prop_type = prop_dict["type"]
 
-            if prop == "Sub-item":
+            if prop_dict[prop_type] is None:
                 pass
-            match prop_type:
-                case "title":
-                    title = prop_dict[prop_type][0]["text"]["content"]
-                    unpacked_data[prop] = {"title": [{"text": {"content": title}}]}
-                case "multi_select":
-                    tag_list = [
-                        {"name": select["name"]} for select in prop_dict[prop_type]
-                    ]
-                    unpacked_data[prop] = {prop_type: tag_list}
-                case "select":
-                    if prop_dict[prop_type] != None:
-                        unpacked_data[prop] = {
-                            prop_type: {"name": prop_dict[prop_type]["name"]}
-                        }
-                case "checkbox":
-                    unpacked_data[prop] = {prop_type: prop_dict[prop_type]}
-                case "number":
-                    unpacked_data[prop] = {prop_type: prop_dict[prop_type]}
-                case "self.url":
-                    unpacked_data[prop] = {prop_type: prop_dict[prop_type]}
-                case "date":
-                    unpacked_data[prop] = {prop_type: prop_dict[prop_type]}
-                case "rich_text":
-                    if prop_dict[prop_type] != []:
-                        content = prop_dict[prop_type][0]["text"]["content"]
-                        unpacked_data[prop] = {
-                            "rich_text": [{"text": {"content": content}}]
-                        }
-                case "relation":
-                    pass
-        return unpacked_data
+
+            elif prop_type in ["checkbox", "number", "self.url", "date"]:
+                unpacked_props[prop] = {prop_type: prop_dict[prop_type]}
+
+            elif prop_type in ["select", "status"]:
+                unpacked_props[prop] = {
+                    prop_type: {"name": prop_dict[prop_type]["name"]}
+                }
+
+            elif prop_type == "people":
+                people_list = [
+                    {"object": "user", "id": user["id"]}
+                    for user in prop_dict[prop_type]
+                ]
+                unpacked_props[prop] = {"people": people_list}
+
+            elif prop_type == "title":
+                title = prop_dict[prop_type][0]["text"]["content"]
+                unpacked_props[prop] = {"title": [{"text": {"content": title}}]}
+
+            elif prop_type == "multi_select":
+                tag_list = [{"name": select["name"]} for select in prop_dict[prop_type]]
+                unpacked_props[prop] = {prop_type: tag_list}
+
+            elif prop_type == "rich_text":
+                if prop_dict[prop_type] != []:
+                    content = prop_dict[prop_type][0]["text"]["content"]
+                    unpacked_props[prop] = {
+                        "rich_text": [{"text": {"content": content}}]
+                    }
+            elif prop_type == "relation":
+                pass
+
+        if task["properties"]["Notes"]["checkbox"] == True:
+            page_contents = self.get_page_contents(task["id"])
+            return {"props": unpacked_props, "contents": page_contents}
+        else:
+            return {"props": unpacked_props}
 
     def recreate_task(self, task: dict, parent: str):
         pages_url = self.url + "pages"
-        new_props = self.unpack_db_page(task)
-        data = {"parent": {"database_id": parent}, "properties": new_props}
+        page = self.unpack_db_page(task)
+        new_page = {
+            prop: page["props"][prop]
+            for prop in page["props"]
+            if prop in self.config["notion"]["sync_props"]
+        }
+        data = {
+            "parent": {"database_id": parent},
+            "properties": new_page,
+        }
+
+        if "contents" in page.keys():
+            data["children"] = page["contents"]
+
         make_call_with_retry(
             "post",
             pages_url,

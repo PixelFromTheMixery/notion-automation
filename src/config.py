@@ -1,4 +1,4 @@
-from utils.helper import list_options
+from utils.helper import list_options, multi_options
 
 import pytz, yaml
 from datetime import datetime
@@ -32,7 +32,7 @@ class Config:
         self.save_to_yaml(f"{service.capitalize()} key saved")
 
     def set_timezone(self):
-        timezones = [{"name":zone} for zone in pytz.all_timezones]
+        timezones = [zone for zone in pytz.all_timezones]
         self.data["system"]["timezone"] = list_options(
             timezones,
             "Enter the number of the timezone: ",
@@ -96,6 +96,19 @@ class Config:
 
         self.save_to_yaml(message)
 
+    def multiselect_from_list(self, list_name):
+        message = ""
+        if list_name == "notion_prop_sync":
+            props = self.notion_utils.get_db_structure(self.data["notion"]["task_db"])
+            prop_list = [prop for prop in props if prop]
+            self.data["notion"]["sync_props"] = multi_options(
+                prop_list,
+                "List the properties: ",
+                "Select which properties you'd like to sync: ",
+            )
+            message = "Notion sync props saved"
+        self.save_to_yaml(message)
+
     def setup(self, setup_values):
         print("File not found, making fresh file")
         self.data["system"] = {"locked": {}}
@@ -135,10 +148,23 @@ class Config:
         }
         self.save_to_yaml("Notion reset property set")
 
-    def setup_mover(self):
+    def notion_logging(self):
+        log = input("Would you like to log completed tasks (y/n)? ")
+        if log == "y":
+            self.data["notion"]["log"] = True
+        else:
+            self.data["notion"]["log"] = False
+
+        self.save_to_yaml(f"Notion logging set to {self.data["notion"]["log"]}")
+
+    def setup_notion(self):
         self.select_from_list("notion_user")
-        self.select_from_list("notion_history")
-        self.notion_reset_prop()
+        self.notion_logging()
+
+        if self.data["notion"]["log"]:
+            self.select_from_list("notion_history")
+            self.multiselect_from_list("notion_prop_sync")
+            self.notion_reset_prop()
 
     def clockify_clients(self):
         if "clients" not in self.data["clockify"].keys():
@@ -177,23 +203,25 @@ class Config:
 
     def change_settings(self):
         settings = True
-        settings_list = [{"name": key} for key in self.data.keys()]
-        settings_list.append({"name":"quit"})
+        settings_list = [key for key in self.data.keys()]
+        settings_list.append("quit")
         while settings == True:
             setting_type = list_options(
                 settings_list,
                 "Enter the number of the option: ",
                 "Please select the type of setting you'd like to change:",
-            )["name"]
+                "basic",
+            )
 
             if setting_type == "clockify":
-                clockify_list = [{"name": key} for key in self.data["clockify"].keys()]
-                clockify_list.append({"name":"go back"})
+                clockify_list = [key for key in self.data["clockify"].keys()]
+                clockify_list.append("go back")
                 clockify_setting = list_options(
                     clockify_list,
                     "Enter the number of the option: ",
                     "Please select the type of setting you'd like to change:",
-                )["name"]
+                    "basic",
+                )
 
                 if clockify_setting == "projects":
                     self.clockify_projects()
@@ -208,14 +236,23 @@ class Config:
                     break
 
             elif setting_type =="notion":
-                notion_list = [{"name": key} for key in self.data["notion"].keys()]
-                notion_list.append({"name":"go back"})
+                notion_list = [key for key in self.data["notion"].keys()]
+                notion_list.append("go back")
                 notion_setting = list_options(
                     notion_list,
                     "Enter the number of the option: ",
                     "Please select the type of setting you'd like to change:",
-                )["name"]
-                if notion_setting == "history":
+                    "basic",
+                )
+                if notion_setting == "sync_props":
+                    self.multiselect_from_list("notion_prop_sync")
+                elif notion_setting == "log":
+                    self.notion_logging()
+                    if self.data["notion"]["log"]:
+                        self.select_from_list("notion_history")
+                        self.multiselect_from_list("notion_prop_sync")
+                        self.notion_reset_prop()
+                elif notion_setting == "history":
                     self.select_from_list("notion_history")
 
                 elif notion_setting == "reset_prop":
@@ -225,13 +262,14 @@ class Config:
                     break
 
             elif setting_type == "system":
-                system_list = [{"name": key} for key in self.data["system"].keys()]
-                system_list.append({"name":"go back"})
+                system_list = [key for key in self.data["system"].keys()]
+                system_list.append("go back")
                 system_setting = list_options(
                     system_list,
                     "Enter the number of the option: ",
                     "Please select the type of setting you'd like to change:",
-                )["name"]
+                    "basic",
+                )
 
                 if system_setting == "clockify_key":
                     self.set_key("clockify")

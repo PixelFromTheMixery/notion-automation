@@ -4,14 +4,14 @@ from notion.notion_utils import NotionUtils
 import re
 from datetime import datetime, timedelta
 
-class MoveTasks:
+class ResetTasks:
     def __init__(self):
         self.config = Config()
         self.notion_utils = NotionUtils()
 
     def new_due_date(self, task: dict, now_datetime):
-        freq = task["properties"]["Repeats"]["number"]
-        scale = task["properties"]["Every"]["select"]["name"]
+        freq = task["properties"]["Frequency"]["number"]
+        scale = task["properties"]["Rate"]["select"]["name"]
         datetime_str = task["properties"]["Due Date"]["date"]["start"]
         new_time = re.search(r"\d{2}:\d{2}:\d{2}.\d{3}", datetime_str)
 
@@ -36,8 +36,8 @@ class MoveTasks:
             new_due_value = new_start_datetime.strftime(f"%Y-%m-%d")
         return new_due_value
 
-    def delete_or_reset_tm_task(self, task: dict):
-        if task["properties"]["Every"]["select"] is not None:
+    def delete_or_reset_task(self, task: dict):
+        if task["properties"]["Rate"]["select"] is not None:
             new_date = self.new_due_date(task, datetime.now())
             data = {"properties": {"Due Date": {"date": {"start": new_date}}}}
 
@@ -63,8 +63,13 @@ class MoveTasks:
                 task["properties"]["Name"]["title"][0]["text"]["content"],
             )
 
-    def move_tasks(self):
-        tasks_to_move = self.notion_utils.get_tasks("Done")
-        for task in tasks_to_move:
-            self.notion_utils.recreate_task(task, self.config.data["notion"]["history"])
-            self.delete_or_reset_tm_task(task)
+    def automate_tasks(self):
+        tasks_to_update = self.notion_utils.get_tasks("Done")
+        
+        if self.config.data["notion"]["log"]:
+            for task in tasks_to_update:
+                self.notion_utils.recreate_task(task, self.config.data["notion"]["history"])
+                self.delete_or_reset_task(task)
+        else:
+            for task in tasks_to_update:
+                self.delete_or_reset_task(task)
