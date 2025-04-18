@@ -63,7 +63,7 @@ python3 main.py -clockify -notion
 
 Common Problems:
 
-**Logs are kept in the base folder under Logs/<year>/<month>/<day>.txt. Most problems can be determined from this.**
+**Logs are kept in the base folder under Logs/year/month/day.txt. Most problems can be determined from this.**
 
 Some problems can be fixed by running setup.bat again or the argument with 
 
