@@ -1,3 +1,6 @@
+# !This project has been discontinued!
+While operational, the notion aspects are being migrated to Intervalia for a webserver with web/android app to replace Clockify dependency.
+
 # Notion Task Automation
 
 A cron-based notion automation tool with a few integrations and configutation options.
