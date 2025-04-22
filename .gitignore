@@ -1,13 +1,9 @@
 # Secrets
-secrets/*
 .env
-
-# Logs
-logs/
-src/data/*
 
 #venv
 venv/
 
+#python
 __pycache__/
 *.pyc

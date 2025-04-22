@@ -1,61 +1,12 @@
 {
-	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Run Main File",
-			"type": "python",
+			"name": "Python Debugger: FastAPI",
+			"type": "debugpy",
 			"request": "launch",
-			"program": "${workspaceFolder}/src/main.py",
-			"console": "integratedTerminal"
-		},
-		{
-			"name": "Database match",
-			"type": "python",
-			"request": "launch",
-			"program": "${workspaceFolder}/src/main.py",
-			"console": "integratedTerminal",
-			"args": ["-dbm"]
-		},
-		{
-			"name": "Move tasks",
-			"type": "python",
-			"request": "launch",
-			"program": "${workspaceFolder}/src/main.py",
-			"console": "integratedTerminal",
-			"args": ["-m"]
-		},
-		{
-			"name": "Clockify",
-			"type": "python",
-			"request": "launch",
-			"program": "${workspaceFolder}/src/main.py",
-			"console": "integratedTerminal",
-			"args": ["-c"]
-		},
-		{
-			"name": "Setup",
-			"type": "python",
-			"request": "launch",
-			"program": "${workspaceFolder}/src/main.py",
-			"console": "integratedTerminal",
-			"args": ["-s", "clockify"]
+			"module": "uvicorn",
+			"args": ["main:app", "--reload", "--port", "8001"],
+			"jinja": true,
 		}
-		{
-			"name": "Testing",
-			"type": "python",
-			"request": "launch",
-			"program": "${workspaceFolder}/src/main.py",
-			"console": "integratedTerminal",
-			"args": ["-t"]
-		}
-		{
-			"name": "Sync and Move",
-			"type": "python",
-			"request": "launch",
-			"program": "${workspaceFolder}/src/main.py",
-			"console": "integratedTerminal",
-			"args": ["--m", "--c"],
-		}
-		
 	]
 }
