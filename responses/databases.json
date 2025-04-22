@@ -1,0 +1,1066 @@
+{
+	"databases": [
+		{
+			"id": "10d62907-d7c2-8036-8428-e8afc8ab261f",
+			"title": "Master Tasker",
+			"properties": [
+				{
+					"name": "Last edited time",
+					"type": "last_edited_time",
+					"possible_values": null
+				},
+				{
+					"name": "Time",
+					"type": "number",
+					"possible_values": null
+				},
+				{
+					"name": "Status",
+					"type": "status",
+					"possible_values": [
+						{
+							"id": "vvyB",
+							"name": "Paused",
+							"color": "gray",
+							"description": null
+						},
+						{
+							"id": "Ve=g",
+							"name": "Ongoing",
+							"color": "gray",
+							"description": null
+						},
+						{
+							"id": "jl[n",
+							"name": "Imported",
+							"color": "gray",
+							"description": null
+						},
+						{
+							"id": "hkur",
+							"name": "Repeating",
+							"color": "gray",
+							"description": null
+						},
+						{
+							"id": "30820d68-f280-4224-b032-eb9df794982c",
+							"name": "Not started",
+							"color": "default",
+							"description": null
+						},
+						{
+							"id": "v~@c",
+							"name": "Extra",
+							"color": "blue",
+							"description": null
+						},
+						{
+							"id": "245c40df-6930-4aac-9818-99d1d3659ebe",
+							"name": "Tracking",
+							"color": "blue",
+							"description": null
+						},
+						{
+							"id": "27d3ac8e-b5c5-430a-b4ef-dc6d2cde8e54",
+							"name": "Done",
+							"color": "green",
+							"description": null
+						}
+					]
+				},
+				{
+					"name": "Info",
+					"type": "formula",
+					"possible_values": null
+				},
+				{
+					"name": "Created at",
+					"type": "created_time",
+					"possible_values": null
+				},
+				{
+					"name": "Due Date",
+					"type": "date",
+					"possible_values": null
+				},
+				{
+					"name": "Category",
+					"type": "select",
+					"possible_values": [
+						{
+							"id": "1c4c7ebc-63d8-4392-9750-0676679c7df0",
+							"name": "Adult",
+							"color": "purple",
+							"description": null
+						},
+						{
+							"id": "pVQ=",
+							"name": "Care",
+							"color": "blue",
+							"description": null
+						},
+						{
+							"id": "zt<D",
+							"name": "Non-Tech",
+							"color": "green",
+							"description": null
+						},
+						{
+							"id": "ET>m",
+							"name": "Tech",
+							"color": "pink",
+							"description": null
+						},
+						{
+							"id": "8017d258-c0f7-4df3-b81c-046877d70748",
+							"name": "Inbox",
+							"color": "brown",
+							"description": null
+						}
+					]
+				},
+				{
+					"name": "Assignee",
+					"type": "people",
+					"possible_values": null
+				},
+				{
+					"name": "Frequency",
+					"type": "number",
+					"possible_values": null
+				},
+				{
+					"name": "Type",
+					"type": "select",
+					"possible_values": [
+						{
+							"id": "78b53733-eab3-4fb4-953a-1fa18c6bcced",
+							"name": "Corrective",
+							"color": "pink",
+							"description": null
+						},
+						{
+							"id": "d38dc228-3c48-45ac-9257-4d3cb751e08b",
+							"name": "Adaptive",
+							"color": "purple",
+							"description": null
+						},
+						{
+							"id": "2d02d486-d403-4bd1-a0f0-4ad4631e11f3",
+							"name": "Perfective",
+							"color": "default",
+							"description": null
+						},
+						{
+							"id": "225ff9a5-30ac-4373-9349-042261a432d3",
+							"name": "Preventative",
+							"color": "red",
+							"description": null
+						},
+						{
+							"id": "dc538ac9-36cd-4f56-b3cb-0179639584b0",
+							"name": "Generative",
+							"color": "brown",
+							"description": null
+						},
+						{
+							"id": "c577c030-a957-420f-926c-c4b59800c64f",
+							"name": "Collective",
+							"color": "orange",
+							"description": null
+						},
+						{
+							"id": "46ce446f-1bfc-4976-a4b1-f9f2c245214e",
+							"name": "Reflective",
+							"color": "yellow",
+							"description": null
+						}
+					]
+				},
+				{
+					"name": "Parent",
+					"type": "relation",
+					"possible_values": null
+				},
+				{
+					"name": "Sub-item",
+					"type": "relation",
+					"possible_values": null
+				},
+				{
+					"name": "Name",
+					"type": "title",
+					"possible_values": null
+				},
+				{
+					"name": "Size",
+					"type": "select",
+					"possible_values": [
+						{
+							"id": "xs",
+							"name": "Extra Small",
+							"color": "purple",
+							"description": null
+						},
+						{
+							"id": "s",
+							"name": "Small",
+							"color": "blue",
+							"description": null
+						},
+						{
+							"id": "m",
+							"name": "Medium",
+							"color": "green",
+							"description": null
+						},
+						{
+							"id": "l",
+							"name": "Large",
+							"color": "yellow",
+							"description": null
+						},
+						{
+							"id": "xl",
+							"name": "Extra Large",
+							"color": "red",
+							"description": null
+						}
+					]
+				},
+				{
+					"name": "URL",
+					"type": "url",
+					"possible_values": null
+				},
+				{
+					"name": "DoD",
+					"type": "rich_text",
+					"possible_values": null
+				},
+				{
+					"name": "Notes",
+					"type": "checkbox",
+					"possible_values": null
+				},
+				{
+					"name": "Project",
+					"type": "select",
+					"possible_values": [
+						{
+							"id": "840ca117-0f26-47ad-a381-95e1cb861f78",
+							"name": "Career",
+							"color": "default",
+							"description": null
+						},
+						{
+							"id": "89e80a22-7014-47f4-ab06-f81cf011ad19",
+							"name": "Rats",
+							"color": "brown",
+							"description": null
+						},
+						{
+							"id": "6e32d496-782f-410f-b91b-81691031371c",
+							"name": "Cleaning",
+							"color": "orange",
+							"description": null
+						},
+						{
+							"id": "2e9ebd6d-afcb-491c-9914-25a1be18c17e",
+							"name": "Needs",
+							"color": "yellow",
+							"description": null
+						},
+						{
+							"id": "8458b068-2c6b-4d4b-b299-0803532466aa",
+							"name": "Reflection",
+							"color": "green",
+							"description": null
+						},
+						{
+							"id": "a702b806-ab0e-4752-b08b-4f4466d6cdb1",
+							"name": "Notion Edits",
+							"color": "blue",
+							"description": null
+						},
+						{
+							"id": "32a33a82-cdea-4534-bf30-72e1cfd22c3d",
+							"name": "Shopping",
+							"color": "purple",
+							"description": null
+						},
+						{
+							"id": "7a62abb6-6e1d-45c1-a932-0a50b1f782f1",
+							"name": "Hobbies",
+							"color": "pink",
+							"description": null
+						},
+						{
+							"id": "e9e17c67-89dd-4d5f-8aad-b9d1a9e15ae8",
+							"name": "Home",
+							"color": "red",
+							"description": null
+						},
+						{
+							"id": "d3f1af5b-91f3-4f04-b5b0-560b99aa2a8d",
+							"name": "Notion Automation",
+							"color": "orange",
+							"description": null
+						},
+						{
+							"id": "Dq~I",
+							"name": "Notion Rituals",
+							"color": "yellow",
+							"description": null
+						},
+						{
+							"id": "8f763c8c-ef77-4319-8ed4-a1e2e752c7c5",
+							"name": "Inbox",
+							"color": "green",
+							"description": null
+						}
+					]
+				},
+				{
+					"name": "Rate",
+					"type": "select",
+					"possible_values": [
+						{
+							"id": "fa6d07c2-69f9-4e54-8795-4cbcce6eb8b4",
+							"name": "Days",
+							"color": "brown",
+							"description": null
+						},
+						{
+							"id": "09b71586-a174-4daa-87bf-864229052709",
+							"name": "Weeks",
+							"color": "orange",
+							"description": null
+						},
+						{
+							"id": "905d2cca-5102-4126-96f4-791c3279c1d4",
+							"name": "Months",
+							"color": "green",
+							"description": null
+						}
+					]
+				},
+				{
+					"name": "Level",
+					"type": "multi_select",
+					"possible_values": [
+						{
+							"id": ":_LC",
+							"name": "Urgent",
+							"color": "orange",
+							"description": null
+						},
+						{
+							"id": "0b442547-4fad-4cf5-b938-5d3ed597d501",
+							"name": "Important",
+							"color": "yellow",
+							"description": null
+						},
+						{
+							"id": "eT`~",
+							"name": "Not Urgent",
+							"color": "blue",
+							"description": null
+						},
+						{
+							"id": "0d3ce4cd-16b5-42b3-82a6-09c1c076a13d",
+							"name": "Not  Important",
+							"color": "green",
+							"description": null
+						}
+					]
+				}
+			]
+		},
+		{
+			"id": "14662907-d7c2-809f-beaf-e23c4eb5302b",
+			"title": "Tasker History",
+			"properties": [
+				{
+					"name": "Assignee",
+					"type": "people",
+					"possible_values": null
+				},
+				{
+					"name": "Info",
+					"type": "formula",
+					"possible_values": null
+				},
+				{
+					"name": "Time",
+					"type": "number",
+					"possible_values": null
+				},
+				{
+					"name": "Category",
+					"type": "select",
+					"possible_values": [
+						{
+							"id": "0f24df7b-0f04-487d-bfe7-b106e8d0ad41",
+							"name": "Non-Tech",
+							"color": "green",
+							"description": null
+						},
+						{
+							"id": "a3b04ab5-1323-41b1-b096-646b16cab1e1",
+							"name": "Tech",
+							"color": "pink",
+							"description": null
+						},
+						{
+							"id": "d09b634a-486a-4fab-af0b-b6dadd037ef0",
+							"name": "Care",
+							"color": "blue",
+							"description": null
+						},
+						{
+							"id": "7e3e8f57-56ac-48ae-a8a0-e71f64e74ed3",
+							"name": "Adult",
+							"color": "gray",
+							"description": null
+						}
+					]
+				},
+				{
+					"name": "Status",
+					"type": "status",
+					"possible_values": [
+						{
+							"id": "b94c3ae1-6721-4169-a0fe-563ac109b8f5",
+							"name": "Not started",
+							"color": "default",
+							"description": null
+						},
+						{
+							"id": "77eb8329-fd6f-47c0-b940-68af8bb4a211",
+							"name": "In progress",
+							"color": "blue",
+							"description": null
+						},
+						{
+							"id": "62471df0-7095-4802-b7b0-cc6492fa8f47",
+							"name": "Done",
+							"color": "green",
+							"description": null
+						}
+					]
+				},
+				{
+					"name": "Due Date",
+					"type": "date",
+					"possible_values": null
+				},
+				{
+					"name": "Last edited time",
+					"type": "last_edited_time",
+					"possible_values": null
+				},
+				{
+					"name": "Type",
+					"type": "select",
+					"possible_values": [
+						{
+							"id": "b053ec5f-f904-447c-906b-c33452a68fe3",
+							"name": "Preventative",
+							"color": "brown",
+							"description": null
+						},
+						{
+							"id": "8a8e5404-30d2-48be-a358-b0665cfaa430",
+							"name": "Adaptive",
+							"color": "gray",
+							"description": null
+						},
+						{
+							"id": "bc1945b9-6be2-4190-b48a-a5e5dd641047",
+							"name": "Perfective",
+							"color": "purple",
+							"description": null
+						},
+						{
+							"id": "a8de7da6-182b-48eb-b4eb-66b3d90785c0",
+							"name": "Corrective",
+							"color": "orange",
+							"description": null
+						},
+						{
+							"id": "df503217-d5c4-4186-b08d-60d06e493294",
+							"name": "Generative",
+							"color": "red",
+							"description": null
+						},
+						{
+							"id": "7ae52f59-c20e-4625-8449-dc8d12f530ea",
+							"name": "Collective",
+							"color": "default",
+							"description": null
+						},
+						{
+							"id": "hv\\V",
+							"name": "Self Care",
+							"color": "blue",
+							"description": null
+						}
+					]
+				},
+				{
+					"name": "Level",
+					"type": "multi_select",
+					"possible_values": [
+						{
+							"id": "10c9684c-f080-4a6e-89e0-4bf2cf618f0e",
+							"name": "Not  Important",
+							"color": "pink",
+							"description": null
+						},
+						{
+							"id": "52000312-eaa4-442e-8e00-f60694fda948",
+							"name": "Not Urgent",
+							"color": "red",
+							"description": null
+						},
+						{
+							"id": "9507c617-898a-4350-84be-84dae7d39956",
+							"name": "Urgent",
+							"color": "default",
+							"description": null
+						},
+						{
+							"id": "f707d3f1-5e74-49a7-90d3-e0c3f0df3499",
+							"name": "Important",
+							"color": "brown",
+							"description": null
+						}
+					]
+				},
+				{
+					"name": "Notes",
+					"type": "checkbox",
+					"possible_values": null
+				},
+				{
+					"name": "Frequency",
+					"type": "number",
+					"possible_values": null
+				},
+				{
+					"name": "Name",
+					"type": "title",
+					"possible_values": null
+				},
+				{
+					"name": "Size",
+					"type": "select",
+					"possible_values": [
+						{
+							"id": "xs",
+							"name": "Extra Small",
+							"color": "purple",
+							"description": null
+						},
+						{
+							"id": "s",
+							"name": "Small",
+							"color": "blue",
+							"description": null
+						},
+						{
+							"id": "m",
+							"name": "Medium",
+							"color": "green",
+							"description": null
+						},
+						{
+							"id": "l",
+							"name": "Large",
+							"color": "yellow",
+							"description": null
+						},
+						{
+							"id": "xl",
+							"name": "Extra Large",
+							"color": "red",
+							"description": null
+						}
+					]
+				},
+				{
+					"name": "Created at",
+					"type": "created_time",
+					"possible_values": null
+				},
+				{
+					"name": "URL",
+					"type": "url",
+					"possible_values": null
+				},
+				{
+					"name": "DoD",
+					"type": "rich_text",
+					"possible_values": null
+				},
+				{
+					"name": "Project",
+					"type": "select",
+					"possible_values": [
+						{
+							"id": "67403539-a926-4350-909c-50b68e3d726e",
+							"name": "Notion Rituals",
+							"color": "orange",
+							"description": null
+						},
+						{
+							"id": "b0530c3f-4c12-4afb-bfc6-eef58de056ab",
+							"name": "Shopping",
+							"color": "brown",
+							"description": null
+						},
+						{
+							"id": "b8787ec3-a53c-4393-b53e-4f2d56b2d851",
+							"name": "Home",
+							"color": "default",
+							"description": null
+						},
+						{
+							"id": "b62fd16b-d4b8-43fe-93e4-8b30b160f891",
+							"name": "Inbox",
+							"color": "purple",
+							"description": null
+						},
+						{
+							"id": "049f954f-fcb5-4fe9-8f91-32c72c1f7c4b",
+							"name": "Cleaning",
+							"color": "red",
+							"description": null
+						},
+						{
+							"id": "86fb06fe-0b1c-47f1-ba6f-f7201cb4d66f",
+							"name": "Notion Automation",
+							"color": "green",
+							"description": null
+						},
+						{
+							"id": "a91dcec7-8933-4de9-9172-45c6daa8e0ce",
+							"name": "Rats",
+							"color": "green",
+							"description": null
+						},
+						{
+							"id": "7e4f8307-1379-494b-8a2b-2d73588bb5ce",
+							"name": "Notion Edits",
+							"color": "red",
+							"description": null
+						},
+						{
+							"id": "28ac8249-38ce-4cda-a434-5310dd148d57",
+							"name": "Needs",
+							"color": "green",
+							"description": null
+						},
+						{
+							"id": "1babf0ba-570f-4df2-a75b-df1dafc70f89",
+							"name": "Career",
+							"color": "brown",
+							"description": null
+						}
+					]
+				},
+				{
+					"name": "Rate",
+					"type": "select",
+					"possible_values": [
+						{
+							"id": "98fc1a36-d200-4a21-8b28-27a410413977",
+							"name": "Bi-daily",
+							"color": "gray",
+							"description": null
+						},
+						{
+							"id": "09b71586-a174-4daa-87bf-864229052709",
+							"name": "Week",
+							"color": "orange",
+							"description": null
+						},
+						{
+							"id": "bc54ec58-0152-43ba-88e8-6f604c19f992",
+							"name": "Fortnight",
+							"color": "default",
+							"description": null
+						},
+						{
+							"id": "905d2cca-5102-4126-96f4-791c3279c1d4",
+							"name": "Month",
+							"color": "green",
+							"description": null
+						},
+						{
+							"id": "ccade07c-d11f-4a70-b2fc-0ae0ffec7c07",
+							"name": "Daily",
+							"color": "red",
+							"description": null
+						},
+						{
+							"id": "c9ab63f0-d0d9-492e-b0a3-3f5eb20720eb",
+							"name": "Days",
+							"color": "pink",
+							"description": null
+						},
+						{
+							"id": "903f913d-a009-4be4-97a3-9eb898070aff",
+							"name": "Weeks",
+							"color": "brown",
+							"description": null
+						},
+						{
+							"id": "10e376cd-1867-419e-849e-2e28f8ce0910",
+							"name": "Months",
+							"color": "blue",
+							"description": null
+						}
+					]
+				}
+			]
+		},
+		{
+			"id": "14a62907-d7c2-807c-aab3-ffeb67a0fabe",
+			"title": "Pending Tasker",
+			"properties": [
+				{
+					"name": "Imported",
+					"type": "checkbox",
+					"possible_values": null
+				},
+				{
+					"name": "Time",
+					"type": "number",
+					"possible_values": null
+				},
+				{
+					"name": "Done",
+					"type": "status",
+					"possible_values": [
+						{
+							"id": "7232b26a-3f1e-4939-8773-fe791b35f37d",
+							"name": "Not started",
+							"color": "default",
+							"description": null
+						},
+						{
+							"id": "13403348-7d7b-4946-8ac3-7f06835e6b3d",
+							"name": "In progress",
+							"color": "blue",
+							"description": null
+						},
+						{
+							"id": "939c23e4-6a92-46ae-bffd-e1ecc53bb895",
+							"name": "Done",
+							"color": "green",
+							"description": null
+						}
+					]
+				},
+				{
+					"name": "Edited time",
+					"type": "last_edited_time",
+					"possible_values": null
+				},
+				{
+					"name": "Due Date",
+					"type": "date",
+					"possible_values": null
+				},
+				{
+					"name": "Assignee",
+					"type": "people",
+					"possible_values": null
+				},
+				{
+					"name": "Created at",
+					"type": "created_time",
+					"possible_values": null
+				},
+				{
+					"name": "Info",
+					"type": "formula",
+					"possible_values": null
+				},
+				{
+					"name": "Repeats",
+					"type": "number",
+					"possible_values": null
+				},
+				{
+					"name": "Size",
+					"type": "select",
+					"possible_values": [
+						{
+							"id": "0181e2c5-7b9f-409e-a98a-f6b9c636ef25",
+							"name": "Extra Small",
+							"color": "purple",
+							"description": null
+						},
+						{
+							"id": "f3a26d18-8a5f-477e-b7f7-410bbcf877c9",
+							"name": "Small",
+							"color": "blue",
+							"description": null
+						},
+						{
+							"id": "19d01ec2-e505-4533-a6be-cd89eb8f0d5b",
+							"name": "Medium",
+							"color": "green",
+							"description": null
+						},
+						{
+							"id": "e5f44ec7-14ad-4be3-a966-1f51378e72c0",
+							"name": "Large",
+							"color": "yellow",
+							"description": null
+						},
+						{
+							"id": "2db6bda0-227a-4512-8724-970828d878de",
+							"name": "Extra Large",
+							"color": "red",
+							"description": null
+						}
+					]
+				},
+				{
+					"name": "Type",
+					"type": "select",
+					"possible_values": [
+						{
+							"id": "3f3ee578-2c68-4ddd-913e-ceb98cc6daef",
+							"name": "Corrective",
+							"color": "pink",
+							"description": null
+						},
+						{
+							"id": "24ec93fe-17d3-4814-81d5-e3f3bd3442c5",
+							"name": "Adaptive",
+							"color": "purple",
+							"description": null
+						},
+						{
+							"id": "7de3c0b6-214e-4607-905b-f7ce953a28cb",
+							"name": "Perfective",
+							"color": "default",
+							"description": null
+						},
+						{
+							"id": "d92fdcdf-7488-4f32-84fc-bb24ffb22463",
+							"name": "Preventative",
+							"color": "red",
+							"description": null
+						},
+						{
+							"id": "38307119-db7f-4b3c-a4ea-bf5445ceaf4f",
+							"name": "Generative",
+							"color": "brown",
+							"description": null
+						},
+						{
+							"id": "f4936651-4bd4-43d3-b919-469e79f66195",
+							"name": "Collective",
+							"color": "orange",
+							"description": null
+						},
+						{
+							"id": "04faa97a-3ed2-4773-b534-190f3ac97728",
+							"name": "Reflective",
+							"color": "yellow",
+							"description": null
+						}
+					]
+				},
+				{
+					"name": "Sub-item",
+					"type": "relation",
+					"possible_values": null
+				},
+				{
+					"name": "Category",
+					"type": "select",
+					"possible_values": [
+						{
+							"id": "d7a8a93c-8b12-48a3-a603-fddbb8d0fbc2",
+							"name": "Non-Tech",
+							"color": "green",
+							"description": null
+						},
+						{
+							"id": "b5c6169e-d5e2-4b0d-a5db-bc459df3c338",
+							"name": "Tech",
+							"color": "pink",
+							"description": null
+						},
+						{
+							"id": "4babaf06-ae8c-42da-a102-e52c0591f907",
+							"name": "Care",
+							"color": "blue",
+							"description": null
+						}
+					]
+				},
+				{
+					"name": "Name",
+					"type": "title",
+					"possible_values": null
+				},
+				{
+					"name": "URL",
+					"type": "url",
+					"possible_values": null
+				},
+				{
+					"name": "DoD",
+					"type": "rich_text",
+					"possible_values": null
+				},
+				{
+					"name": "Project",
+					"type": "select",
+					"possible_values": [
+						{
+							"id": "fCTi",
+							"name": "Codex Eletia",
+							"color": "red",
+							"description": null
+						},
+						{
+							"id": "7a62abb6-6e1d-45c1-a932-0a50b1f782f1",
+							"name": "Hobbies",
+							"color": "pink",
+							"description": null
+						},
+						{
+							"id": "e651bc96-c777-45e5-81c3-73c95815d43f",
+							"name": "Bubble Wrap",
+							"color": "yellow",
+							"description": null
+						},
+						{
+							"id": "c22382b0-07bf-44b1-a22e-d9a7cef10760",
+							"name": "Intervalia",
+							"color": "gray",
+							"description": null
+						},
+						{
+							"id": "7cfb0eda-3304-4f28-a4c1-7486b1fc1117",
+							"name": "Duty Donkey",
+							"color": "green",
+							"description": null
+						},
+						{
+							"id": "06169294-2ddf-477e-bb18-2e76cb04e4ba",
+							"name": "Pep Talk Gen",
+							"color": "default",
+							"description": null
+						},
+						{
+							"id": "642edceb-4281-411b-ab5b-565f9e3ab715",
+							"name": "Accidental Murder",
+							"color": "brown",
+							"description": null
+						},
+						{
+							"id": "e40dd8d7-325f-4322-a21e-fe945659bc23",
+							"name": "DockerGraph",
+							"color": "purple",
+							"description": null
+						},
+						{
+							"id": "e7ab3885-7f15-4e4b-a14d-36b79153bdcd",
+							"name": "Multipixel",
+							"color": "orange",
+							"description": null
+						},
+						{
+							"id": "ab004ffc-1e8a-4878-95a2-0867bf5cb950",
+							"name": "S.N.A.K.E.",
+							"color": "orange",
+							"description": null
+						},
+						{
+							"id": "ff6a003a-b255-4916-9a4c-e533652da409",
+							"name": "Potion Sort",
+							"color": "pink",
+							"description": null
+						},
+						{
+							"id": "0483e563-25e8-4969-a9df-a834a5ec2bdf",
+							"name": "EnoPhone",
+							"color": "gray",
+							"description": null
+						},
+						{
+							"id": "16645704-7ca3-437c-9aa0-ad5e159ee2fa",
+							"name": "Notion Rituals",
+							"color": "default",
+							"description": null
+						}
+					]
+				},
+				{
+					"name": "Every",
+					"type": "select",
+					"possible_values": [
+						{
+							"id": "fa6d07c2-69f9-4e54-8795-4cbcce6eb8b4",
+							"name": "Days",
+							"color": "brown",
+							"description": null
+						},
+						{
+							"id": "09b71586-a174-4daa-87bf-864229052709",
+							"name": "Weeks",
+							"color": "orange",
+							"description": null
+						},
+						{
+							"id": "905d2cca-5102-4126-96f4-791c3279c1d4",
+							"name": "Months",
+							"color": "green",
+							"description": null
+						}
+					]
+				},
+				{
+					"name": "Level",
+					"type": "multi_select",
+					"possible_values": [
+						{
+							"id": ":_LC",
+							"name": "Urgent",
+							"color": "orange",
+							"description": null
+						},
+						{
+							"id": "0b442547-4fad-4cf5-b938-5d3ed597d501",
+							"name": "Important",
+							"color": "yellow",
+							"description": null
+						},
+						{
+							"id": "0d3ce4cd-16b5-42b3-82a6-09c1c076a13d",
+							"name": "Not  Important",
+							"color": "green",
+							"description": null
+						},
+						{
+							"id": "eT`~",
+							"name": "Not Urgent",
+							"color": "blue",
+							"description": null
+						}
+					]
+				}
+			]
+		}
+	]
+}

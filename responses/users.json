@@ -1,0 +1,19 @@
+{
+	"users": [
+		{
+			"id": "11e8456e-a7b2-4421-9f52-4579d8e09974",
+			"name": "Pixel Mixery",
+			"type": "person"
+		},
+		{
+			"id": "ff082d0a-5234-4f43-8761-49de2f86b89c",
+			"name": "Task Mover",
+			"type": "bot"
+		},
+		{
+			"id": "166fd89c-c038-4a90-b0f2-e664fcd79624",
+			"name": "Fabulous Clone",
+			"type": "bot"
+		}
+	]
+}

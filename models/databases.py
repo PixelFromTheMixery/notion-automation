@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import List
 
-class Property(BaseModel):
+class DatabaseProperty(BaseModel):
     name: str
     type: str
     possible_values: List = None
@@ -9,7 +9,7 @@ class Property(BaseModel):
 class Database(BaseModel):
     id: str
     title: str
-    properties: List[Property]
+    properties: List[DatabaseProperty]
     
 class Databases(BaseModel):
     databases: List[Database]

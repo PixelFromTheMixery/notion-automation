@@ -5,6 +5,10 @@ description = """
 
 tags_metadata = [
     {
+        "name": "local",
+        "description": "local examples for calling"
+    },
+    {
         "name": "notion",
         "description": "Endpoints for notion interaction",
         "externalDocs": {

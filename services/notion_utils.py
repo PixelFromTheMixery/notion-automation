@@ -1,4 +1,5 @@
 from models.databases import Databases, Database
+from models.task import Task
 from models.users import Users
 from utils.api_tools import make_call_with_retry
 
@@ -45,6 +46,27 @@ class NotionUtils:
             databases.append(database_obj)
         return Databases(databases=databases)
 
+    async def get_database(self,database_id):
+        database_url = self.url + f"databases/{database_id}"
+        notion_database = make_call_with_retry(
+            "get", database_url, "fetch databases for selection"
+        )
+        database = {
+            "id": database_id,
+            "title": notion_database["title"][0]['text']['content'],
+            "properties": []
+        }
+        for prop in notion_database["properties"]:
+            prop_type = notion_database["properties"][prop]["type"]
+            prop_obj = {
+                "name": notion_database["properties"][prop]["name"],
+                "type": prop_type,
+            }
+            if prop_type in ["status", "select", "multi_select"]:
+                prop_obj["possible_values"] = notion_database["properties"][prop][prop_type]["options"]
+            database["properties"].append(prop_obj)
+        return Database(**database)
+
     def match_db_structure(self, source: Database, target: Database):
         for prop in source["properties"]:
             del source["properties"][prop]["id"]
@@ -67,7 +89,7 @@ class NotionUtils:
 
         props_to_destroy = {prop: None for prop in to_destroy}
 
-        db_url = self.url + f"databases/{target}"
+        db_url = self.url + f"databases/{target['id']}"
 
         if len(props_to_destroy) != 0:
             data = {"properties": props_to_destroy}
@@ -92,18 +114,58 @@ class NotionUtils:
                 data,
             )
 
-    def get_project_list(self, database_id):
-        notion_projects = self.get_db_structure(
-            database_id
-        )["Project"]["select"]["options"]
-        return [project["name"] for project in notion_projects]
+    async def get_page(self, page_id):
+        page_url = self.url + f"pages/{page_id}"
+        notion_page = make_call_with_retry("get", page_url, f"fetch page")
+        page = {
+            "id": page_id,
+            "name": notion_page["properties"]["Name"]["title"][0]['text']['content'],
+            "properties": {}
+        }
+        page_details = self.extract_page_props(notion_page)
+        page["properties"] = page_details['props']
+        return Task(**page)
 
     def get_page_contents(self, page_id):
         children_url = self.url + f"blocks/{page_id}/children"
         children = make_call_with_retry("get", children_url, f"fetch page contents")
         return children
 
-    def unpack_db_page(self, task: dict):
+    def extract_page_props(self, task:dict):
+        extracted_props = {}
+        for prop in task["properties"]:
+            prop_dict = task["properties"][prop]
+            prop_type = prop_dict["type"]
+
+            if prop_type in ["relation", "last_edited_time", "created_time"]:
+                pass
+
+            elif prop_type in ["checkbox", "number", "self.url"]:
+                extracted_props[prop] = prop_dict[prop_type]
+
+            elif prop_type in ["select", "status"]:
+                extracted_props[prop] = prop_dict[prop_type]["name"]
+
+            elif prop_type == "date":
+                extracted_props[prop] = prop_dict[prop_type]["start"]
+
+            elif prop_type == "people":
+                extracted_props[prop] = prop_dict[prop_type][0]["id"]
+
+            elif prop_type == "title":
+                extracted_props[prop] = prop_dict[prop_type][0]["text"]["content"]
+
+            elif prop_type == "multi_select":
+                extracted_props[prop] = [select["name"] for select in prop_dict[prop_type]]
+
+            elif prop_type == "rich_text":
+                if prop_dict[prop_type] != []:
+                    extracted_props[prop] = prop_dict[prop_type][0]["text"]["content"]
+                    
+        return {"props": extracted_props}
+
+
+    def db_page_to_dict(self, task: dict):
         unpacked_props = {}
 
         for prop in task["properties"]:
@@ -153,7 +215,7 @@ class NotionUtils:
 
     def recreate_task(self, task: dict, parent: str):
         pages_url = self.url + "pages"
-        page = self.unpack_db_page(task)
+        page = self.db_page_to_dict(task)
         new_page = {
             prop: page["props"][prop]
             for prop in page["props"]

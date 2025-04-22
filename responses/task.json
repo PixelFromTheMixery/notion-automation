@@ -1,0 +1,20 @@
+{
+	"id": "1c462907d7c281f4b9f7e8201ce0d135",
+	"name": "Emile",
+	"properties": {
+		"Time": null,
+		"Status": "Repeating",
+		"Due Date": "2025-04-08",
+		"Category": "Care",
+		"Assignee": "11e8456e-a7b2-4421-9f52-4579d8e09974",
+		"Frequency": 1,
+		"Type": "Adaptive",
+		"Name": "Emile",
+		"Size": "Extra Small",
+		"DoD": "Timer task for my love",
+		"Notes": true,
+		"Project": "Needs",
+		"Rate": "Days",
+		"Level": ["Important", "Not Urgent"]
+	}
+}

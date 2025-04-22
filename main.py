@@ -1,6 +1,6 @@
 from utils.docs import description, tags_metadata
 from utils.logger import logger
-from utils.schedule import lifespan
+#from utils.schedule import lifespan
 from middlewares.exception_middleware import ExceptionMiddleware
 import routers
 
@@ -12,8 +12,8 @@ app = FastAPI(
     title="🍅 Intervalia Endpoints",
     description=description,
     summary="API endpoints for the Intervalia App",
-    openapi_tags=tags_metadata,
-    lifespan=lifespan
+    openapi_tags=tags_metadata
+    #lifespan=lifespan
 )
 
 app.add_middleware(ExceptionMiddleware)
