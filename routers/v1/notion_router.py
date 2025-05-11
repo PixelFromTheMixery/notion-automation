@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 router = APIRouter()
 
 notion_utils = NotionUtils()
-reset_tasks = TaskAutomation()
+task_automation = TaskAutomation()
 
 @router.get("/users")
 async def get_users_endpoint():
@@ -34,9 +34,16 @@ async def get_page_endpoint(page_id:str = "1c462907d7c281f4b9f7e8201ce0d135"):
     logger.info("Notion database endpoint called")
     return await notion_utils.get_page(page_id)
 
-@router.get("/reset")
-async def reset_tasks_endpoint():
+@router.get("/status_reset")
+async def status_reset_endpoint():
     """Reset or delete tasks"""
-    logger.info("Notion tasks reset endpoint called")
-    result = reset_tasks.task_status_reset()
+    logger.info("Notion task status reset endpoint called")
+    result = task_automation.task_status_reset()
+    return JSONResponse(result[0],result[1])
+
+@router.get("/date_update")
+async def date_reset_endpoint():
+    """Reset or delete tasks"""
+    logger.info("Notion task date update endpoint called")
+    result = task_automation.task_date_update()
     return JSONResponse(result[0],result[1])

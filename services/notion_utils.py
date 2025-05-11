@@ -245,18 +245,18 @@ class NotionUtils:
                 data = {"filter": {"property": arg_two, "status": {"equals": "Done"}}}
             else:
                 data = {"filter": {"property": arg_two, "checkbox": True}}
-        elif query == "Time":
+        elif query == "Overdue":
             data = {
                 "filter": {
-                    "timestamp": "last_edited_time",
-                    "last_edited_time": {"on_or_after": arg_one},
+                    "property": "Due Date",
+                    "date": {"before": arg_one},
                 }
             }
         elif query == "Name":
             data = {"filter": {"property": "Name", "rich_text": {"equals": arg_one}}}
         return data
 
-    def get_tasks(self, project: str, double_list: bool = False, history: bool = False):
+    def get_tasks(self, project: str, optional: str, double_list: bool = False, history: bool = False):
         tasks_url = (
             self.url + f'databases/{self.data.databases["tasks"]["id"]}/query'
         )
@@ -267,14 +267,14 @@ class NotionUtils:
             )
         if project == "Done":
             data = self.task_data_filter(
-                "Done", self.reset_type, self.reset_name
+                project, self.reset_type, self.reset_name
             )
             url_info = "get all completed tasks"
-        elif project == "Time":
+        elif project == "Overdue":
             data = self.task_data_filter(
-                "Time", self.data.last_auto_sync
+                project, optional
             )
-            url_info = "get all completed tasks"
+            url_info = "get all overdue tasks"
         else:
             data = {"filter": {"property": "Project", "select": {"equals": project}}}
             url_info = f"get all tasks in notion project: {project}"

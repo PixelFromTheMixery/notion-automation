@@ -80,3 +80,13 @@ class TaskAutomation:
             self.delete_or_reset_task(task)
         self.data.update(datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"))
         return (True, 200)
+
+    def task_date_update(self):
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        tasks_to_update = self.notion_utils.get_tasks("Overdue", today_str)
+        if len(tasks_to_update) == 0:
+            return (False, 200)
+        for task in tasks_to_update:
+            update = {"properties":{"Due Date":{"date":{"start": today_str}}}}
+            self.notion_utils.update_page(update, task["id"], task["properties"]["Name"]["title"][0]["text"]["content"])
+        return (True, 200)
