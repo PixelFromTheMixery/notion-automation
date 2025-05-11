@@ -1,9 +1,12 @@
 # Secrets
 .env
 
-#venv
+# Config
+instance.yaml
+
+# venv
 venv/
 
-#python
+# python
 __pycache__/
 *.pyc

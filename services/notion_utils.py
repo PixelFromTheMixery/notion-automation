@@ -256,7 +256,7 @@ class NotionUtils:
             data = {"filter": {"property": "Name", "rich_text": {"equals": arg_one}}}
         return data
 
-    def get_tasks(self, project: str, optional: str, double_list: bool = False, history: bool = False):
+    def get_tasks(self, project: str, optional: str = None, double_list: bool = False, history: bool = False):
         tasks_url = (
             self.url + f'databases/{self.data.databases["tasks"]["id"]}/query'
         )
