@@ -1,0 +1,16 @@
+break_banks:
+- category: thing
+  time: 1000
+databases:
+  log:
+    enabled: true
+    id: 14662907d7c2809fbeafe23c4eb5302b
+  tasks:
+    id: 10d62907d7c280368428e8afc8ab261f
+    reset_name: Status
+    reset_type: status
+    reset_value: Repeating
+last_auto_sync: '2025-05-11T13:00:02Z'
+settings:
+  dark_mode: false
+  notifications: true

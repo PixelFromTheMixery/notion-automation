@@ -1,9 +1,14 @@
+from utils.instance import InstanceData
 from services.notion_utils import NotionUtils
 
 import re
 from datetime import datetime, timedelta
 
-class ResetTasks:
+class TaskAutomation:
+
+    def __init__(self):
+        self.notion_utils = NotionUtils()
+        self.data = InstanceData.load()
 
     def new_due_date(self, task: dict, now_datetime):
         freq = task["properties"]["Frequency"]["number"]
@@ -37,15 +42,15 @@ class ResetTasks:
             new_date = self.new_due_date(task, datetime.now())
             data = {"properties": {"Due Date": {"date": {"start": new_date}}}}
 
-            if self.notion_utils.reset_prop_type == "checkbox":
-                data["properties"][self.notion_utils.reset_prop_name] = (
+            if self.notion_utils.reset_type == "checkbox":
+                data["properties"][self.notion_utils.reset_name] = (
                     {"checkbox": "false"},
                 )
 
             else:
-                data["properties"][self.notion_utils.reset_prop_name] = {
+                data["properties"][self.notion_utils.reset_name] = {
                     "status": {
-                        "name": self.config.data["notion"]["log"]["reset_prop"]["text"]
+                        "name": self.data.databases["tasks"]["reset_value"]
                     }
                 }
                 self.notion_utils.update_page(
@@ -61,15 +66,17 @@ class ResetTasks:
                 task["properties"]["Name"]["title"][0]["text"]["content"],
             )
 
-    def automate_tasks(self):
+    def task_status_reset(self):
         tasks_to_update = self.notion_utils.get_tasks("Done")
-
-        if self.config.data["notion"]["log"]["active"]:
+        if len(tasks_to_update) == 0:
+            self.data.update(datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"))
+            return (False, 200)
+        if self.data.databases["log"]["enabled"]:
             for task in tasks_to_update:
                 self.notion_utils.recreate_task(
-                    task, self.config.data["notion"]["log"]["history"]
+                    task, self.data.databases["log"]["id"]
                 )
-                self.delete_or_reset_task(task)
-        else:
-            for task in tasks_to_update:
-                self.delete_or_reset_task(task)
+        for task in tasks_to_update:
+            self.delete_or_reset_task(task)
+        self.data.update(datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"))
+        return (True, 200)

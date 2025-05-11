@@ -1,16 +1,15 @@
-from datetime import datetime
+from services.task_automation import TaskAutomation
+
 from fastapi import FastAPI
 from apscheduler.schedulers.background import BackgroundScheduler
 from contextlib import asynccontextmanager
 
 scheduler = BackgroundScheduler()
-
-def scheduled_task():
-    print(f"task ran at {datetime.now()}")
+reset_tasks = TaskAutomation()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    #scheduler.add_job(scheduled_task, 'interval', seconds=10)
+    scheduler.add_job(reset_tasks.task_status_reset, 'cron', hour="*/1")
     scheduler.start()
     yield
-    scheduler.shutdown()
+    scheduler.shutdown(wait=False)    

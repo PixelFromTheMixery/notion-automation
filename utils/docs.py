@@ -21,6 +21,10 @@ tags_metadata = [
         "description": "Endpoints for general use"
     },
     {
+        "name": "debug",
+        "description": "debug tests for calling"
+    },
+    {
         "name": "v1",
         "description": "Version 1 Endpoints"
     }

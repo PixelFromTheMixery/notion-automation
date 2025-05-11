@@ -2,10 +2,15 @@ from models.databases import Databases, Database
 from models.task import Task
 from models.users import Users
 from utils.api_tools import make_call_with_retry
+from utils.instance import InstanceData
 
 class NotionUtils:
     def __init__(self):
         self.url = "https://api.notion.com/v1/"
+        self.data = InstanceData.load()
+        self.reset_name = self.data.databases["tasks"]["reset_name"]
+        self.reset_type = self.data.databases["tasks"]["reset_type"]
+        self.reset_value = self.data.databases["tasks"]["reset_value"]
 
     async def get_users(self):
         user_url = self.url + "users"
@@ -78,13 +83,11 @@ class NotionUtils:
             k: source["properties"][k]
             for k in source["properties"]
             if k not in target["properties"]
-            and k in self.config.data["notion"]["log"]["sync_props"]
         }
         to_destroy = {
             k: target["properties"][k]
             for k in target["properties"]
             if k not in source["properties"]
-            and k in self.config.data["notion"]["log"]["sync_props"]
         }
 
         props_to_destroy = {prop: None for prop in to_destroy}
@@ -161,7 +164,7 @@ class NotionUtils:
             elif prop_type == "rich_text":
                 if prop_dict[prop_type] != []:
                     extracted_props[prop] = prop_dict[prop_type][0]["text"]["content"]
-                    
+
         return {"props": extracted_props}
 
 
@@ -183,7 +186,7 @@ class NotionUtils:
                     prop_type: {"name": prop_dict[prop_type]["name"]}
                 }
 
-            elif prop_type == "people":
+            elif prop_type == "people_unused":
                 people_list = [
                     {"object": "user", "id": user["id"]}
                     for user in prop_dict[prop_type]
@@ -219,7 +222,6 @@ class NotionUtils:
         new_page = {
             prop: page["props"][prop]
             for prop in page["props"]
-            if prop in self.config.data["notion"]["log"]["sync_props"]
         }
         data = {
             "parent": {"database_id": parent},
@@ -256,26 +258,23 @@ class NotionUtils:
 
     def get_tasks(self, project: str, double_list: bool = False, history: bool = False):
         tasks_url = (
-            self.url + f'databases/{self.config.data["notion"]["task_db"]}/query'
+            self.url + f'databases/{self.data.databases["tasks"]["id"]}/query'
         )
         if history:
             tasks_url = (
                 self.url
-                + f'databases/{self.config.data["notion"]["log"]["history"]}/query'
+                + f'databases/{self.data.databases["log"]}/query'
             )
         if project == "Done":
             data = self.task_data_filter(
-                "Done", self.reset_prop_type, self.reset_prop_name
+                "Done", self.reset_type, self.reset_name
             )
             url_info = "get all completed tasks"
         elif project == "Time":
             data = self.task_data_filter(
-                "Time", self.config.data["system"]["locked"]["notion_sync"]
+                "Time", self.data.last_auto_sync
             )
             url_info = "get all completed tasks"
-        elif project not in self.config.data["clockify"]["projects"]["name"].keys():
-            data = self.task_data_filter("Name", project)
-            url_info = f"check for task {project}"
         else:
             data = {"filter": {"property": "Project", "select": {"equals": project}}}
             url_info = f"get all tasks in notion project: {project}"
