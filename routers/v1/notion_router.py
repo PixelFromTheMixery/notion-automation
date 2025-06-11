@@ -28,9 +28,9 @@ async def get_databases_endpoint(database_id:str = "10d62907-d7c2-8036-8428-e8af
     logger.info("Notion database endpoint called")
     return await notion_utils.get_database(database_id)
 
-@router.get("/pages/{page_id}")
+@router.get("/page/{page_id}")
 async def get_page_endpoint(page_id:str = "1c462907d7c281f4b9f7e8201ce0d135"):
-    """Get a notion page and its properties by id"""
+    """Get a notion database page and its properties by id"""
     logger.info("Notion database endpoint called")
     return await notion_utils.get_page(page_id)
 
@@ -42,7 +42,7 @@ async def status_reset_endpoint():
     return JSONResponse(result[0],result[1])
 
 @router.get("/date_update")
-async def date_reset_endpoint():
+async def date_update_endpoint():
     """Reset or delete tasks"""
     logger.info("Notion task date update endpoint called")
     result = task_automation.task_date_update()

@@ -120,13 +120,22 @@ class NotionUtils:
     async def get_page(self, page_id):
         page_url = self.url + f"pages/{page_id}"
         notion_page = make_call_with_retry("get", page_url, f"fetch page")
-        page = {
-            "id": page_id,
-            "name": notion_page["properties"]["Name"]["title"][0]['text']['content'],
-            "properties": {}
-        }
-        page_details = self.extract_page_props(notion_page)
-        page["properties"] = page_details['props']
+        
+        if notion_page["parent"]["type"] == "database_id":
+            page = {
+                "id": page_id,
+                "name": notion_page["properties"]["Name"]["title"][0]['text']['content'],
+                "properties": {}
+            }
+            page_details = self.extract_page_props(notion_page)
+            page["properties"] = page_details['props']
+        else:
+            page = {
+                "id": page_id,
+                "name": notion_page["properties"]["title"]["title"][0]['text']['content'],
+                "properties": {},
+                "contents": self.get_page_contents(page_id)
+            }
         return Task(**page)
 
     def get_page_contents(self, page_id):
