@@ -12,8 +12,8 @@ app = FastAPI(
     title="🍅 Intervalia Endpoints",
     description=description,
     summary="API endpoints for the Intervalia App",
-    openapi_tags=tags_metadata#,
-    #lifespan=lifespan
+    openapi_tags=tags_metadata,
+    lifespan=lifespan
 )
 
 app.add_middleware(ExceptionMiddleware)
