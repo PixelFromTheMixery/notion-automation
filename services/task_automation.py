@@ -12,16 +12,15 @@ class TaskAutomation:
 
     def new_due_date(self, task: dict, now_datetime):
         freq = task["properties"]["Frequency"]["number"]
-        scale = task["properties"]["Rate"]["select"]["name"]
+        scale = task["properties"]["Rate"]["select"]["name"].lower()
         datetime_str = task["properties"]["Due Date"]["date"]["start"]
         new_time = re.search(r"\d{2}:\d{2}:\d{2}.\d{3}", datetime_str)
 
-        match scale:
-            case "Days":
+        if "day" in scale:
                 new_start_datetime = now_datetime + timedelta(days=freq)
-            case "Weeks":
+        if "week" in scale:
                 new_start_datetime = now_datetime + timedelta(weeks=freq)
-            case "Months":
+        if "month" in scale:
                 # Add months manually
                 new_month = (now_datetime.month - 1 + freq) % 12 + 1
                 year_delta = (now_datetime.month - 1 + freq) // 12
@@ -66,16 +65,27 @@ class TaskAutomation:
                 task["properties"]["Name"]["title"][0]["text"]["content"],
             )
 
-    def task_status_reset(self):
+    async def task_status_reset(self):
         tasks_to_update = self.notion_utils.get_tasks("Done")
         if len(tasks_to_update) == 0:
             self.data.update(datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"))
             return (False, 200)
         if self.data.databases["log"]["enabled"]:
             for task in tasks_to_update:
-                self.notion_utils.recreate_task(
-                    task, self.data.databases["log"]["id"]
-                )
+                try:
+                    self.notion_utils.recreate_task(
+                        task, self.data.databases["log"]["id"]
+                    )
+                except:
+                    source_database = await self.notion_utils.get_database(self.data.databases["tasks"]["id"])
+                    target_database = await self.notion_utils.get_database(self.data.databases["log"]["id"])
+                    self.notion_utils.match_db_structure(
+                        source_database, target_database
+                    )
+                    self.notion_utils.recreate_task(
+                        task, self.data.databases["log"]["id"]
+                    )
+
         for task in tasks_to_update:
             self.delete_or_reset_task(task)
         self.data.update(datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"))
@@ -88,5 +98,9 @@ class TaskAutomation:
             return (False, 200)
         for task in tasks_to_update:
             update = {"properties":{"Due Date":{"date":{"start": today_str}}}}
-            self.notion_utils.update_page(update, task["id"], task["properties"]["Name"]["title"][0]["text"]["content"])
+            if task["properties"]["Name"]["title"] != []:
+                page_name = task["properties"]["Name"]["title"][0]["text"]["content"]
+            else:
+                page_name = task["id"]
+            self.notion_utils.update_page(update, task["id"], page_name)
         return (True, 200)

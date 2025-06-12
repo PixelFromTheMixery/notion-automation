@@ -51,7 +51,7 @@ class NotionUtils:
             databases.append(database_obj)
         return Databases(databases=databases)
 
-    async def get_database(self,database_id):
+    async def get_database(self, database_id, obj: bool = False):
         database_url = self.url + f"databases/{database_id}"
         notion_database = make_call_with_retry(
             "get", database_url, "fetch databases for selection"
@@ -59,30 +59,24 @@ class NotionUtils:
         database = {
             "id": database_id,
             "title": notion_database["title"][0]['text']['content'],
-            "properties": []
+            "properties": {}
         }
         for prop in notion_database["properties"]:
+            prop_name = notion_database["properties"][prop]["name"]
             prop_type = notion_database["properties"][prop]["type"]
-            prop_obj = {
-                "name": notion_database["properties"][prop]["name"],
-                "type": prop_type,
-            }
+            prop_dict = { prop_type : {}}
             if prop_type in ["status", "select", "multi_select"]:
-                prop_obj["possible_values"] = notion_database["properties"][prop][prop_type]["options"]
-            database["properties"].append(prop_obj)
-        return Database(**database)
+                prop_dict["options"] = notion_database["properties"][prop][prop_type]["options"]
+            database["properties"][prop_name] = prop_dict
+        if obj: return Database(**database)
+        else: return database
 
-    def match_db_structure(self, source: Database, target: Database):
-        for prop in source["properties"]:
-            del source["properties"][prop]["id"]
-
-        for prop in target["properties"].keys():
-            del target["properties"][prop]["id"]
-
+    def match_db_structure(self, source, target):
         to_create = {
             k: source["properties"][k]
             for k in source["properties"]
             if k not in target["properties"]
+            and k != "relation"
         }
         to_destroy = {
             k: target["properties"][k]
@@ -94,6 +88,7 @@ class NotionUtils:
 
         db_url = self.url + f"databases/{target['id']}"
 
+
         if len(props_to_destroy) != 0:
             data = {"properties": props_to_destroy}
             make_call_with_retry(
@@ -103,13 +98,8 @@ class NotionUtils:
                 data
             )
 
-        new_prop = {}
         for prop in to_create:
-            prop_dict = to_create[prop]
-            prop_type = prop_dict["type"]
-            new_prop = {prop: {prop_type: prop_dict[prop_type]}}
-
-            data = {"properties": new_prop}
+            data = {"properties": {prop: to_create[prop]}}
             make_call_with_retry(
                 "patch",
                 db_url,

@@ -46,10 +46,12 @@ def make_call_with_retry(
         except requests.exceptions.RequestException as e:
             print(f"RequestException on attempt {attempt}: {e}")
             print(f'json response: {result["message"]}')
+            if "not a property that exists" in result["message"]:
+                raise ValueError("Property does not exist, will attempt match")
             if attempt < retries:
-                time.sleep(delay)  # Wait before retrying
+                time.sleep(delay)
             else:
-                return {"error"}
+                raise Exception(f"Request failed: {e}") from e
         except ValueError as e:
             print(f"ValueError: {e}")
             return None

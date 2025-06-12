@@ -38,7 +38,7 @@ async def get_page_endpoint(page_id:str = "1c462907d7c281f4b9f7e8201ce0d135"):
 async def status_reset_endpoint():
     """Reset or delete tasks"""
     logger.info("Notion task status reset endpoint called")
-    result = task_automation.task_status_reset()
+    result = await task_automation.task_status_reset()
     return JSONResponse(result[0],result[1])
 
 @router.get("/date_update")
