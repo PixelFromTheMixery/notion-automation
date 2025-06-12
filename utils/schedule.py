@@ -1,10 +1,10 @@
 from services.task_automation import TaskAutomation
 
 from fastapi import FastAPI
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from contextlib import asynccontextmanager
 
-scheduler = BackgroundScheduler()
+scheduler = AsyncIOScheduler()
 task_automation = TaskAutomation()
 
 @asynccontextmanager
