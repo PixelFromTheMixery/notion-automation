@@ -1,4 +1,4 @@
-from services.notion_utils import NotionUtils
+from utils.notion import NotionUtils
 from services.task_automation import TaskAutomation
 from utils.logger import logger
 

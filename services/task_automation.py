@@ -1,5 +1,5 @@
+from utils.notion import NotionUtils
 from utils.instance import InstanceData
-from services.notion_utils import NotionUtils
 
 import re
 from datetime import datetime, timedelta
@@ -7,9 +7,9 @@ from datetime import datetime, timedelta
 class TaskAutomation:
 
     def __init__(self):
-        self.notion_utils = NotionUtils()
         self.data = InstanceData.load()
-
+        self.notion = NotionUtils()
+        
     def new_due_date(self, task: dict, now_datetime):
         freq = task["properties"]["Frequency"]["number"]
         scale = task["properties"]["Rate"]["select"]["name"].lower()
@@ -41,48 +41,48 @@ class TaskAutomation:
             new_date = self.new_due_date(task, datetime.now())
             data = {"properties": {"Due Date": {"date": {"start": new_date}}}}
 
-            if self.notion_utils.reset_type == "checkbox":
-                data["properties"][self.notion_utils.reset_name] = (
+            if self.notion.reset_type == "checkbox":
+                data["properties"][self.notion.reset_name] = (
                     {"checkbox": "false"},
                 )
 
             else:
-                data["properties"][self.notion_utils.reset_name] = {
+                data["properties"][self.notion.reset_name] = {
                     "status": {
                         "name": self.data.databases["tasks"]["reset_value"]
                     }
                 }
-                self.notion_utils.update_page(
+                self.notion.update_page(
                     data,
                     task["id"],
                     task["properties"]["Name"]["title"][0]["text"]["content"],
                 )
         else:
             data = {"archived": True}
-            self.notion_utils.update_page(
+            self.notion.update_page(
                 data,
                 task["id"],
                 task["properties"]["Name"]["title"][0]["text"]["content"],
             )
 
     async def task_status_reset(self):
-        tasks_to_update = self.notion_utils.get_tasks("Done")
+        tasks_to_update = self.notion.get_tasks("Done")
         if len(tasks_to_update) == 0:
             self.data.update(datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"))
             return (False, 200)
         if self.data.databases["log"]["enabled"]:
             for task in tasks_to_update:
                 try:
-                    self.notion_utils.recreate_task(
+                    self.notion.recreate_task(
                         task, self.data.databases["log"]["id"]
                     )
                 except:
-                    source_database = await self.notion_utils.get_database(self.data.databases["tasks"]["id"])
-                    target_database = await self.notion_utils.get_database(self.data.databases["log"]["id"])
-                    self.notion_utils.match_db_structure(
+                    source_database = await self.notion.get_database(self.data.databases["tasks"]["id"])
+                    target_database = await self.notion.get_database(self.data.databases["log"]["id"])
+                    self.notion.match_db_structure(
                         source_database, target_database
                     )
-                    self.notion_utils.recreate_task(
+                    self.notion.recreate_task(
                         task, self.data.databases["log"]["id"]
                     )
 
@@ -93,7 +93,7 @@ class TaskAutomation:
 
     def task_date_update(self):
         today_str = datetime.now().strftime("%Y-%m-%d")
-        tasks_to_update = self.notion_utils.get_tasks("Overdue", today_str)
+        tasks_to_update = self.notion.get_tasks("Overdue", today_str)
         if len(tasks_to_update) == 0:
             return (False, 200)
         for task in tasks_to_update:
@@ -102,5 +102,5 @@ class TaskAutomation:
                 page_name = task["properties"]["Name"]["title"][0]["text"]["content"]
             else:
                 page_name = task["id"]
-            self.notion_utils.update_page(update, task["id"], page_name)
+            self.notion.update_page(update, task["id"], page_name)
         return (True, 200)
