@@ -1,0 +1,16 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>API Frontend</title>
+  </head>
+  <body>
+    <script>
+      fetch("https://your-tunnel.trycloudflare.com/api/ping")
+        .then(res => res.text())
+        .then(txt => document.body.innerText = txt)
+        .catch(err => document.body.innerText = "Error: " + err);
+    </script>
+  </body>
+</html>
