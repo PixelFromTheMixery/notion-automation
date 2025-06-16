@@ -5,8 +5,12 @@ description = """
 
 tags_metadata = [
     {
-        "name": "local",
-        "description": "local examples for calling"
+        "name": "ttime",
+        "description": "Endpoints for trackingtime interaction",
+        "externalDocs": {
+            "description": "Tracking Time API docs",
+            "url": "https://developers.trackingtime.co"
+        },
     },
     {
         "name": "notion",
@@ -15,6 +19,10 @@ tags_metadata = [
             "description": "Notion API docs",
             "url": "https://developers.notion.com/reference"
         },
+    },
+    {
+        "name": "local",
+        "description": "local examples for calling"
     },
     {
         "name": "general",

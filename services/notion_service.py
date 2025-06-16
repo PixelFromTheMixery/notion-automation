@@ -4,7 +4,7 @@ from utils.instance import InstanceData
 import re
 from datetime import datetime, timedelta
 
-class TaskAutomation:
+class NotionService:
 
     def __init__(self):
         self.data = InstanceData.load()
@@ -68,7 +68,8 @@ class TaskAutomation:
     async def task_status_reset(self):
         tasks_to_update = self.notion.get_tasks("Done")
         if len(tasks_to_update) == 0:
-            self.data.update(datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"))
+            self.data.last_auto_sync = (datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"))
+            self.data.save()
             return (False, 200)
         if self.data.databases["log"]["enabled"]:
             for task in tasks_to_update:

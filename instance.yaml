@@ -10,7 +10,85 @@ databases:
     reset_name: Status
     reset_type: status
     reset_value: Repeating
-last_auto_sync: '2025-06-12T10:58:27Z'
+last_auto_sync: '2025-06-15T20:00:00Z'
 settings:
   dark_mode: false
   notifications: true
+ttime:
+  custom_fields:
+    Day Segment:
+      enum_options:
+      - Morning - Deep Thought
+      - Noon - Grunt work
+      - Afternoon - Admin
+      - Night - Recharge
+      - Anytime
+      id: 1129475
+      object: task
+      type: enum
+    Frequency:
+      enum_options: []
+      id: 1129474
+      object: task
+      type: number
+    Important:
+      enum_options: []
+      id: 1129407
+      object: task
+      type: boolean
+    Notes:
+      enum_options: []
+      id: 1129414
+      object: task
+      type: boolean
+    Rate:
+      enum_options:
+      - Day
+      - Week
+      - Month
+      id: 1129417
+      object: task
+      type: enum
+    Size:
+      enum_options:
+      - Extra Small
+      - Small
+      - Medium
+      - Large
+      - Extra Large
+      id: 1129411
+      object: task
+      type: enum
+    Time:
+      enum_options: []
+      id: 1129405
+      object: task
+      type: number
+    Timer:
+      enum_options: []
+      id: 1129183
+      object: task
+      type: boolean
+    Type:
+      enum_options:
+      - Corrective
+      - Adaptive
+      - Perfective
+      - Preventative
+      - Generative
+      - Collective
+      - Reflective
+      id: 1129410
+      object: task
+      type: enum
+    URL:
+      enum_options: []
+      id: 1129412
+      object: task
+      type: text
+    Urgent:
+      enum_options: []
+      id: 1129406
+      object: task
+      type: boolean
+  enabled: true

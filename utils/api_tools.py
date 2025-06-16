@@ -2,6 +2,7 @@ from utils.logger import logger
 
 import os, requests, time
 from dotenv import load_dotenv
+import base64
 
 load_dotenv()
 
@@ -13,16 +14,25 @@ def make_call_with_retry(
     retries=3,
     delay=2,
 ):
-    headers = {
-        "Authorization": f'Bearer {os.getenv("notion_key")}',
-        "Content-Type": "application/json",
-        "Notion-Version": "2022-06-28",
-    }
+    if "notion" in url:
+        headers = {
+            "Authorization": f'Bearer {os.getenv("notion_key")}',
+            "Content-Type": "application/json",
+            "Notion-Version": "2022-06-28",
+        }
+    elif "trackingtime" in url:
+        auth_raw = f"aya.b.jackson@gmail.com:{os.getenv('ttime_key')}"
+        ttime_key_b64 = base64.b64encode(auth_raw.encode()).decode()
+
+        headers= {
+            "Authorization": f'Basic ' + ttime_key_b64,
+            "Content-Type": "application/json"
+        }
 
     for attempt in range(1, retries + 1):
         try:
             logger.info(f"Attempt to {info}. {attempt} of {retries}")
-            # Main call logic
+            
             match category:
                 case "get":
                     response = requests.get(url, headers=headers)
@@ -35,7 +45,6 @@ def make_call_with_retry(
                 case _:
                     raise ValueError(f"Unknown category: {category}")
 
-            # Return response if successful
             result = response.json()
             response.raise_for_status()
             if "results" in result:

@@ -1,5 +1,5 @@
 from utils.notion import NotionUtils
-from services.task_automation import TaskAutomation
+from services.notion_service import NotionService
 from utils.logger import logger
 
 from fastapi import APIRouter
@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 router = APIRouter()
 
 notion_utils = NotionUtils()
-task_automation = TaskAutomation()
+notion_service = NotionService()
 
 @router.get("/users")
 async def get_users_endpoint():
@@ -38,12 +38,12 @@ async def get_page_endpoint(page_id:str = "1c462907d7c281f4b9f7e8201ce0d135"):
 async def status_reset_endpoint():
     """Reset or delete tasks"""
     logger.info("Notion task status reset endpoint called")
-    result = await task_automation.task_status_reset()
+    result = await notion_service.task_status_reset()
     return JSONResponse(result[0],result[1])
 
 @router.get("/date_update")
 async def date_update_endpoint():
     """Reset or delete tasks"""
     logger.info("Notion task date update endpoint called")
-    result = task_automation.task_date_update()
+    result = notion_service.task_date_update()
     return JSONResponse(result[0],result[1])
